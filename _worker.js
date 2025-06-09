@@ -537,13 +537,13 @@ async function KV(request, env, txt = 'ADD.txt', guest) {
 			<!DOCTYPE html>
 			<html>
 				<head>
-					<title>${FileName} 订阅编辑</title>
+					<title>${FileName} 订阅管理面板</title>
 					<meta charset="utf-8">
 					<meta name="viewport" content="width=device-width, initial-scale=1">
 					<style>
 						:root {
 							--bg-color: #2c3e50;
-							--main-color: #34495e;
+							--main-color: rgba(52, 73, 94, 0.85); /* Added transparency */
 							--text-color: #ecf0f1;
 							--link-color: #3498db;
 							--link-hover: #5dade2;
@@ -552,9 +552,15 @@ async function KV(request, env, txt = 'ADD.txt', guest) {
 							--summary-hover: #5c7a99;
 							--btn-bg: #27ae60;
 							--btn-hover: #2ecc71;
+							--animation-speed: 0.4s; /* Animation speed variable */
 						}
 						body {
-							background: var(--bg-color);
+							/* --- Background Image Added --- */
+							background-image: url('https://picsum.photos/1600/900');
+							background-size: cover;
+							background-position: center;
+							background-attachment: fixed;
+							/* --- End Background --- */
 							color: var(--text-color);
 							font-family: 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif;
 							margin: 0;
@@ -566,9 +572,14 @@ async function KV(request, env, txt = 'ADD.txt', guest) {
 							max-width: 800px;
 							margin: 0 auto;
 							background: var(--main-color);
+							/* --- Glassmorphism Effect --- */
+							backdrop-filter: blur(10px);
+							-webkit-backdrop-filter: blur(10px);
+							/* --- End Effect --- */
 							padding: 20px;
 							border-radius: 10px;
-							box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+							box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+							border: 1px solid rgba(255, 255, 255, 0.2);
 						}
 						h1 {
 							text-align: center;
@@ -582,6 +593,7 @@ async function KV(request, env, txt = 'ADD.txt', guest) {
 							margin-bottom: 10px;
 							border-radius: 5px;
 							border: 1px solid var(--border-color);
+							overflow: hidden; /* Important for animation */
 						}
 						summary {
 							padding: 12px 15px;
@@ -599,7 +611,21 @@ async function KV(request, env, txt = 'ADD.txt', guest) {
 							border-bottom-left-radius: 0;
 							border-bottom-right-radius: 0;
 						}
+						/* --- Animation for Details Dropdown --- */
+						details .content-wrapper {
+							overflow: hidden;
+							transition: max-height var(--animation-speed) ease-out;
+							max-height: 0;
+						}
+						details[open] .content-wrapper {
+							max-height: 1000px; /* Adjust if content is taller */
+							transition: max-height var(--animation-speed) ease-in;
+						}
+						/* --- End Animation --- */
 						.content-wrapper {
+							padding: 0 15px; /* Adjust padding for animation */
+						}
+						details[open] .content-wrapper {
 							padding: 15px;
 						}
 						a {
@@ -661,12 +687,12 @@ async function KV(request, env, txt = 'ADD.txt', guest) {
 							margin-top: 20px;
 							text-align: center;
 							font-size: 12px;
-							color: #95a5a6;
+							color: #bdc3c7;
 							border-top: 1px solid var(--border-color);
 							padding-top: 15px;
 						}
 					</style>
-					<script src="https://cdn.jsdelivr.net/npm/@keeex/qrcodejs-kx@1.0.2/qrcode.min.js"></script>
+					<script src="https://cdn.jsdelivr.net/npm/@keeex/qrcodejs-kx@1.0.2/qrcode.min.js"><\/script>
 				</head>
 				<body>
 					<div class="container">
@@ -847,7 +873,7 @@ async function KV(request, env, txt = 'ADD.txt', guest) {
 							timer = setTimeout(() => saveContent(document.querySelector('.save-btn')), 5000);
 						});
 					}
-					</script>
+					<\/script>
 				</body>
 			</html>
 		`;
