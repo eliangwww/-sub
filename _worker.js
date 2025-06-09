@@ -556,7 +556,7 @@ async function KV(request, env, txt = 'ADD.txt', guest) {
 						}
 						body {
 							/* --- Background Image Added --- */
-							background-image: url('https://picsum.photos/1600/900');
+							background-image: url('https://img.cfip.nyc.mn/api/cfile/BAACAgUAAyEGAASFqpwSAAJKsWg19pcxDXPYqMl5sUm0yLqjEMhBAAIMFAACmOiwVYNDHJn9n35FNgQ');
 							background-size: cover;
 							background-position: center;
 							background-attachment: fixed;
