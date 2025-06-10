@@ -1,3 +1,4 @@
+
 // 部署完成后在网址后面加上这个，获取自建节点和机场聚合节点，/?token=auto或/auto或
 
 let mytoken = 'auto';
@@ -551,7 +552,7 @@ async function KV(request, env, txt = 'ADD.txt', guest) {
 							--summary-hover: #5c7a99;
 							--btn-bg: #27ae60;
 							--btn-hover: #2ecc71;
-							--animation-speed: 0.3s; /* Animation speed variable */
+							--animation-speed: 0.4s; /* Animation speed variable */
 						}
 						body {
 							/* --- Background Image Added --- */
@@ -603,9 +604,6 @@ async function KV(request, env, txt = 'ADD.txt', guest) {
 							transition: background 0.3s ease;
 							list-style: none; /* Hide default marker */
 						}
-						summary::-webkit-details-marker {
-							display: none;
-						}
 						summary:hover {
 							background: var(--summary-hover);
 						}
@@ -613,18 +611,21 @@ async function KV(request, env, txt = 'ADD.txt', guest) {
 							border-bottom-left-radius: 0;
 							border-bottom-right-radius: 0;
 						}
-						.content-wrapper {
-							padding: 0 15px;
-							max-height: 0;
-							opacity: 0;
+						/* --- Animation for Details Dropdown --- */
+						details .content-wrapper {
 							overflow: hidden;
-							transition: max-height var(--animation-speed) ease-in-out,
-										opacity var(--animation-speed) ease-in-out,
-										padding var(--animation-speed) ease-in-out;
+							transition: max-height var(--animation-speed) ease-out;
+							max-height: 0;
 						}
 						details[open] .content-wrapper {
 							max-height: 1000px; /* Adjust if content is taller */
-							opacity: 1;
+							transition: max-height var(--animation-speed) ease-in;
+						}
+						/* --- End Animation --- */
+						.content-wrapper {
+							padding: 0 15px; /* Adjust padding for animation */
+						}
+						details[open] .content-wrapper {
 							padding: 15px;
 						}
 						a {
@@ -647,7 +648,6 @@ async function KV(request, env, txt = 'ADD.txt', guest) {
 							background: white;
 							border-radius: 5px;
 							display: inline-block;
-							line-height: 0; /* Fix extra space issue */
 						}
 						.editor {
 							width: 100%;
@@ -703,32 +703,32 @@ async function KV(request, env, txt = 'ADD.txt', guest) {
 							<div class="content-wrapper">
 								<div class="subscription-link">
 									<strong>自适应订阅:</strong><br>
-									<a href="javascript:void(0)" onclick="copyToClipboard(this.dataset.url)" data-url="https://${url.hostname}/${mytoken}" data-qrcode-id="qrcode_0">https://${url.hostname}/${mytoken}</a>
+									<a href="javascript:void(0)" onclick="copyToClipboard('https://${url.hostname}/${mytoken}?sub','qrcode_0')">https://${url.hostname}/${mytoken}</a>
 									<div class="qr-code" id="qrcode_0"></div>
 								</div>
 								<div class="subscription-link">
 									<strong>Base64:</strong><br>
-									<a href="javascript:void(0)" onclick="copyToClipboard(this.dataset.url)" data-url="https://${url.hostname}/${mytoken}?b64" data-qrcode-id="qrcode_1">https://${url.hostname}/${mytoken}?b64</a>
+									<a href="javascript:void(0)" onclick="copyToClipboard('https://${url.hostname}/${mytoken}?b64','qrcode_1')">https://${url.hostname}/${mytoken}?b64</a>
 									<div class="qr-code" id="qrcode_1"></div>
 								</div>
 								<div class="subscription-link">
 									<strong>Clash:</strong><br>
-									<a href="javascript:void(0)" onclick="copyToClipboard(this.dataset.url)" data-url="https://${url.hostname}/${mytoken}?clash" data-qrcode-id="qrcode_2">https://${url.hostname}/${mytoken}?clash</a>
+									<a href="javascript:void(0)" onclick="copyToClipboard('https://${url.hostname}/${mytoken}?clash','qrcode_2')">https://${url.hostname}/${mytoken}?clash</a>
 									<div class="qr-code" id="qrcode_2"></div>
 								</div>
 								<div class="subscription-link">
 									<strong>Sing-Box:</strong><br>
-									<a href="javascript:void(0)" onclick="copyToClipboard(this.dataset.url)" data-url="https://${url.hostname}/${mytoken}?sb" data-qrcode-id="qrcode_3">https://${url.hostname}/${mytoken}?sb</a>
+									<a href="javascript:void(0)" onclick="copyToClipboard('https://${url.hostname}/${mytoken}?sb','qrcode_3')">https://${url.hostname}/${mytoken}?sb</a>
 									<div class="qr-code" id="qrcode_3"></div>
 								</div>
 								<div class="subscription-link">
 									<strong>Surge:</strong><br>
-									<a href="javascript:void(0)" onclick="copyToClipboard(this.dataset.url)" data-url="https://${url.hostname}/${mytoken}?surge" data-qrcode-id="qrcode_4">https://${url.hostname}/${mytoken}?surge</a>
+									<a href="javascript:void(0)" onclick="copyToClipboard('https://${url.hostname}/${mytoken}?surge','qrcode_4')">https://${url.hostname}/${mytoken}?surge</a>
 									<div class="qr-code" id="qrcode_4"></div>
 								</div>
 								<div class="subscription-link">
 									<strong>Loon:</strong><br>
-									<a href="javascript:void(0)" onclick="copyToClipboard(this.dataset.url)" data-url="https://${url.hostname}/${mytoken}?loon" data-qrcode-id="qrcode_5">https://${url.hostname}/${mytoken}?loon</a>
+									<a href="javascript:void(0)" onclick="copyToClipboard('https://${url.hostname}/${mytoken}?loon','qrcode_5')">https://${url.hostname}/${mytoken}?loon</a>
 									<div class="qr-code" id="qrcode_5"></div>
 								</div>
 							</div>
@@ -740,22 +740,22 @@ async function KV(request, env, txt = 'ADD.txt', guest) {
 								<p>访客订阅仅可用于客户端获取节点，无法访问此管理页面。<br>访客TOKEN: <strong>${guest}</strong></p>
 								<div class="subscription-link">
 									<strong>自适应订阅:</strong><br>
-									<a href="javascript:void(0)" onclick="copyToClipboard(this.dataset.url)" data-url="https://${url.hostname}/sub?token=${guest}" data-qrcode-id="guest_0">https://${url.hostname}/sub?token=${guest}</a>
+									<a href="javascript:void(0)" onclick="copyToClipboard('https://${url.hostname}/sub?token=${guest}','guest_0')">https://${url.hostname}/sub?token=${guest}</a>
 									<div class="qr-code" id="guest_0"></div>
 								</div>
 								<div class="subscription-link">
 									<strong>Base64:</strong><br>
-									<a href="javascript:void(0)" onclick="copyToClipboard(this.dataset.url)" data-url="https://${url.hostname}/sub?token=${guest}&b64" data-qrcode-id="guest_1">https://${url.hostname}/sub?token=${guest}&b64</a>
+									<a href="javascript:void(0)" onclick="copyToClipboard('https://${url.hostname}/sub?token=${guest}&b64','guest_1')">https://${url.hostname}/sub?token=${guest}&b64</a>
 									<div class="qr-code" id="guest_1"></div>
 								</div>
 								<div class="subscription-link">
 									<strong>Clash:</strong><br>
-									<a href="javascript:void(0)" onclick="copyToClipboard(this.dataset.url)" data-url="https://${url.hostname}/sub?token=${guest}&clash" data-qrcode-id="guest_2">https://${url.hostname}/sub?token=${guest}&clash</a>
+									<a href="javascript:void(0)" onclick="copyToClipboard('https://${url.hostname}/sub?token=${guest}&clash','guest_2')">https://${url.hostname}/sub?token=${guest}&clash</a>
 									<div class="qr-code" id="guest_2"></div>
 								</div>
 								<div class="subscription-link">
 									<strong>Sing-Box:</strong><br>
-									<a href="javascript:void(0)" onclick="copyToClipboard(this.dataset.url)" data-url="https://${url.hostname}/sub?token=${guest}&sb" data-qrcode-id="guest_3">https://${url.hostname}/sub?token=${guest}&sb</a>
+									<a href="javascript:void(0)" onclick="copyToClipboard('https://${url.hostname}/sub?token=${guest}&sb','guest_3')">https://${url.hostname}/sub?token=${guest}&sb</a>
 									<div class="qr-code" id="guest_3"></div>
 								</div>
 							</div>
@@ -794,23 +794,17 @@ async function KV(request, env, txt = 'ADD.txt', guest) {
 					</div>
 
 					<script>
-					// --- MODIFIED SCRIPT LOGIC ---
-
-					// Function to copy text and provide feedback
-					function copyToClipboard(text) {
+					function copyToClipboard(text, qrcodeId) {
 						navigator.clipboard.writeText(text).then(() => {
 							alert('已复制到剪贴板');
 						}).catch(err => {
 							console.error('复制失败:', err);
 							alert('复制失败，请手动复制');
 						});
-					}
-					
-					// Function to generate a QR code
-					function generateQRCode(elementId, text) {
-						const qrcodeDiv = document.getElementById(elementId);
-						if (qrcodeDiv) {
-							qrcodeDiv.innerHTML = ''; // Clear previous QR code
+						
+						const qrcodeDiv = document.getElementById(qrcodeId);
+						qrcodeDiv.innerHTML = ''; // Clear previous QR code
+						if (text) {
 							new QRCode(qrcodeDiv, {
 								text: text,
 								width: 150,
@@ -821,20 +815,7 @@ async function KV(request, env, txt = 'ADD.txt', guest) {
 							});
 						}
 					}
-
-					// Generate all QR codes once the page content is loaded
-					window.addEventListener('DOMContentLoaded', (event) => {
-						const links = document.querySelectorAll('a[data-qrcode-id]');
-						links.forEach(link => {
-							const url = link.dataset.url;
-							const qrcodeId = link.dataset.qrcodeId;
-							if (url && qrcodeId) {
-								generateQRCode(qrcodeId, url);
-							}
-						});
-					});
-
-					// Logic for the editor section
+						
 					if (document.querySelector('.editor')) {
 						let timer;
 						const textarea = document.getElementById('content');
