@@ -1,4 +1,3 @@
-
 // 部署完成后在网址后面加上这个，获取自建节点和机场聚合节点，/?token=auto或/auto或
 
 let mytoken = 'auto';
@@ -552,7 +551,7 @@ async function KV(request, env, txt = 'ADD.txt', guest) {
 							--summary-hover: #5c7a99;
 							--btn-bg: #27ae60;
 							--btn-hover: #2ecc71;
-							--animation-speed: 0.4s; /* Animation speed variable */
+							--animation-speed: 0.3s; /* Animation speed variable */
 						}
 						body {
 							/* --- Background Image Added --- */
@@ -604,6 +603,9 @@ async function KV(request, env, txt = 'ADD.txt', guest) {
 							transition: background 0.3s ease;
 							list-style: none; /* Hide default marker */
 						}
+						summary::-webkit-details-marker {
+							display: none;
+						}
 						summary:hover {
 							background: var(--summary-hover);
 						}
@@ -611,23 +613,22 @@ async function KV(request, env, txt = 'ADD.txt', guest) {
 							border-bottom-left-radius: 0;
 							border-bottom-right-radius: 0;
 						}
-						/* --- Animation for Details Dropdown --- */
-						details .content-wrapper {
-							overflow: hidden;
-							transition: max-height var(--animation-speed) ease-out;
+						/* --- MODIFIED: Smoother Animation --- */
+						.content-wrapper {
+							padding: 0 15px;
 							max-height: 0;
+							opacity: 0;
+							overflow: hidden;
+							transition: max-height var(--animation-speed) ease-in-out,
+										opacity var(--animation-speed) ease-in-out,
+										padding var(--animation-speed) ease-in-out;
 						}
 						details[open] .content-wrapper {
 							max-height: 1000px; /* Adjust if content is taller */
-							transition: max-height var(--animation-speed) ease-in;
-						}
-						/* --- End Animation --- */
-						.content-wrapper {
-							padding: 0 15px; /* Adjust padding for animation */
-						}
-						details[open] .content-wrapper {
+							opacity: 1;
 							padding: 15px;
 						}
+						/* --- End Animation Modification --- */
 						a {
 							color: var(--link-color);
 							text-decoration: none;
