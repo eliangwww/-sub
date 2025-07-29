@@ -585,439 +585,652 @@ async function KV(request, env, txt = 'ADD.txt', guest, currentSettings = {}) {
 		}
 
 		const html = `
-			<!DOCTYPE html>
-			<html>
-				<head>
-					<title>${currentSettings.fileName} 订阅管理面板</title>
-					<meta charset="utf-8">
-					<meta name="viewport" content="width=device-width, initial-scale=1">
-					<style>
-						:root {
-							--bg-color: #2c3e50;
-							--main-color: rgba(52, 73, 94, 0.85); /* Added transparency */
-							--text-color: #ecf0f1;
-							--link-color: #3498db;
-							--link-hover: #5dade2;
-							--border-color: #4a627a;
-							--summary-bg: #4a627a;
-							--summary-hover: #5c7a99;
-							--btn-bg: #27ae60;
-							--btn-hover: #2ecc71;
-							--animation-speed: 0.4s; /* Animation speed variable */
-						}
-						body {
-							/* --- Background Image Added --- */
-							background-image: url('https://api.imlcd.cn/bg/gq.php');
-							background-size: cover;
-							background-position: center;
-							background-attachment: fixed;
-							/* --- End Background --- */
-							color: var(--text-color);
-							font-family: 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif;
-							margin: 0;
-							padding: 20px;
-							font-size: 14px;
-							line-height: 1.6;
-						}
-						.container {
-							max-width: 800px;
-							margin: 0 auto;
-							background: var(--main-color);
-							/* --- Glassmorphism Effect --- */
-							backdrop-filter: blur(10px);
-							-webkit-backdrop-filter: blur(10px);
-							/* --- End Effect --- */
-							padding: 20px;
-							border-radius: 10px;
-							box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-							border: 1px solid rgba(255, 255, 255, 0.2);
-						}
-						h1 {
-							text-align: center;
-							color: var(--text-color);
-							border-bottom: 2px solid var(--border-color);
-							padding-bottom: 10px;
-							margin-bottom: 20px;
-						}
-						details {
-							background: rgba(0,0,0,0.1);
-							margin-bottom: 10px;
-							border-radius: 5px;
-							border: 1px solid var(--border-color);
-							overflow: hidden; /* Important for animation */
-						}
-						summary {
-							padding: 12px 15px;
-							background: var(--summary-bg);
-							font-weight: bold;
-							cursor: pointer;
-							border-radius: 5px;
-							transition: background 0.3s ease;
-							list-style: none; /* Hide default marker */
-						}
-						summary:hover {
-							background: var(--summary-hover);
-						}
-						details[open] > summary {
-							border-bottom-left-radius: 0;
-							border-bottom-right-radius: 0;
-						}
-						/* --- Animation for Details Dropdown --- */
-						details .content-wrapper {
-							overflow: hidden;
-							transition: max-height var(--animation-speed) ease-out;
-							max-height: 0;
-						}
-						details[open] .content-wrapper {
-							max-height: 1000px; /* Adjust if content is taller */
-							transition: max-height var(--animation-speed) ease-in;
-						}
-						/* --- End Animation --- */
-						.content-wrapper {
-							padding: 0 15px; /* Adjust padding for animation */
-						}
-						details[open] .content-wrapper {
-							padding: 15px;
-						}
-						a {
-							color: var(--link-color);
-							text-decoration: none;
-						}
-						a:hover {
-							color: var(--link-hover);
-							text-decoration: underline;
-						}
-						strong {
-							color: var(--link-color);
-						}
-						.subscription-link {
-							margin-bottom: 15px;
-						}
-						.qr-code {
-							margin-top: 10px;
-							padding: 10px;
-							background: white;
-							border-radius: 5px;
-							display: inline-block;
-						}
-						.editor {
-							width: 100%;
-							height: 350px;
-							margin: 15px 0;
-							padding: 10px;
-							box-sizing: border-box;
-							border: 1px solid var(--border-color);
-							border-radius: 4px;
-							font-size: 14px;
-							line-height: 1.5;
-							overflow-y: auto;
-							resize: vertical;
-							background: #283747;
-							color: var(--text-color);
-							font-family: 'Courier New', Courier, monospace;
-						}
-						.save-container {
-							margin-top: 8px;
-							display: flex;
-							align-items: center;
-							gap: 10px;
-						}
-						.save-btn {
-							padding: 8px 18px;
-							color: white;
-							background: var(--btn-bg);
-							border: none;
-							border-radius: 4px;
-							cursor: pointer;
-							transition: background 0.3s ease;
-						}
-						.save-btn:hover {
-							background: var(--btn-hover);
-						}
-						.footer {
-							margin-top: 20px;
-							text-align: center;
-							font-size: 12px;
-							color: #bdc3c7;
-							border-top: 1px solid var(--border-color);
-							padding-top: 15px;
-						}
-                        /* New styles for form groups */
-                        .form-group {
-                            margin-bottom: 10px;
-                        }
-                        .form-group label {
-                            display: block;
-                            margin-bottom: 5px;
-                            font-weight: bold;
-                        }
-                        .form-group input[type="text"] {
-                            width: calc(100% - 22px); /* Adjust for padding and border */
-                            padding: 10px;
-                            border: 1px solid var(--border-color);
-                            border-radius: 4px;
-                            background: #283747;
-                            color: var(--text-color);
-                        }
-					</style>
-					<script src="https://cdn.jsdelivr.net/npm/@keeex/qrcodejs-kx@1.0.2/qrcode.min.js"><\/script>
-				</head>
-				<body>
-					<div class="container">
-						<h1>${currentSettings.fileName} 订阅管理面板</h1>
-						
-						<details open>
-							<summary>⭐ 管理员订阅 (Admin Links)</summary>
-							<div class="content-wrapper">
-								<div class="subscription-link">
-									<strong>自适应订阅:</strong><br>
-									<a href="javascript:void(0)" onclick="copyToClipboard('https://${url.hostname}/${mytoken}?sub','qrcode_0')">https://${url.hostname}/${mytoken}</a>
-									<div class="qr-code" id="qrcode_0"></div>
-								</div>
-								<div class="subscription-link">
-									<strong>Base64:</strong><br>
-									<a href="javascript:void(0)" onclick="copyToClipboard('https://${url.hostname}/${mytoken}?b64','qrcode_1')">https://${url.hostname}/${mytoken}?b64</a>
-									<div class="qr-code" id="qrcode_1"></div>
-								</div>
-								<div class="subscription-link">
-									<strong>Clash:</strong><br>
-									<a href="javascript:void(0)" onclick="copyToClipboard('https://${url.hostname}/${mytoken}?clash','qrcode_2')">https://${url.hostname}/${mytoken}?clash</a>
-									<div class="qr-code" id="qrcode_2"></div>
-								</div>
-								<div class="subscription-link">
-									<strong>Sing-Box:</strong><br>
-									<a href="javascript:void(0)" onclick="copyToClipboard('https://${url.hostname}/${mytoken}?sb','qrcode_3')">https://${url.hostname}/${mytoken}?sb</a>
-									<div class="qr-code" id="qrcode_3"></div>
-								</div>
-								<div class="subscription-link">
-									<strong>Surge:</strong><br>
-									<a href="javascript:void(0)" onclick="copyToClipboard('https://${url.hostname}/${mytoken}?surge','qrcode_4')">https://${url.hostname}/${mytoken}?surge</a>
-									<div class="qr-code" id="qrcode_4"></div>
-								</div>
-								<div class="subscription-link">
-									<strong>Loon:</strong><br>
-									<a href="javascript:void(0)" onclick="copyToClipboard('https://${url.hostname}/${mytoken}?loon','qrcode_5')">https://${url.hostname}/${mytoken}?loon</a>
-									<div class="qr-code" id="qrcode_5"></div>
-								</div>
-							</div>
-						</details>
+		<!DOCTYPE html>
+<html>
+    <head>
+        <title>${currentSettings.fileName} 订阅管理面板</title>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+        <style>
+            @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
 
-						<details>
-							<summary>😎 访客订阅 (Guest Links)</summary>
-							<div class="content-wrapper">
-								<p>访客订阅仅可用于客户端获取节点，无法访问此管理页面。<br>访客TOKEN: <strong>${currentSettings.guestToken}</strong></p>
-								<div class="subscription-link">
-									<strong>自适应订阅:</strong><br>
-									<a href="javascript:void(0)" onclick="copyToClipboard('https://${url.hostname}/sub?token=${currentSettings.guestToken}','guest_0')">https://${url.hostname}/sub?token=${currentSettings.guestToken}</a>
-									<div class="qr-code" id="guest_0"></div>
-								</div>
-								<div class="subscription-link">
-									<strong>Base64:</strong><br>
-									<a href="javascript:void(0)" onclick="copyToClipboard('https://${url.hostname}/sub?token=${currentSettings.guestToken}&b64','guest_1')">https://${url.hostname}/sub?token=${currentSettings.guestToken}&b64</a>
-									<div class="qr-code" id="guest_1"></div>
-								</div>
-								<div class="subscription-link">
-									<strong>Clash:</strong><br>
-									<a href="javascript:void(0)" onclick="copyToClipboard('https://${url.hostname}/sub?token=${currentSettings.guestToken}&clash','guest_2')">https://${url.hostname}/sub?token=${currentSettings.guestToken}&clash</a>
-									<div class="qr-code" id="guest_2"></div>
-								</div>
-								<div class="subscription-link">
-									<strong>Sing-Box:</strong><br>
-									<a href="javascript:void(0)" onclick="copyToClipboard('https://${url.hostname}/sub?token=${currentSettings.guestToken}&sb','guest_3')">https://${url.hostname}/sub?token=${currentSettings.guestToken}&sb</a>
-									<div class="qr-code" id="guest_3"></div>
-								</div>
-							</div>
-						</details>
+            :root {
+                --bg-color: #1a1a2e; /* Deeper space blue */
+                --main-color: rgba(27, 27, 46, 0.7); /* Translucent deeper blue */
+                --text-color: #e0e0e0; /* Softer white */
+                --heading-color: #ffffff;
+                --link-color: #00bcd4; /* Brighter cyan */
+                --link-hover: #4dd0e1;
+                --border-color: rgba(255, 255, 255, 0.1);
+                --card-bg: rgba(255, 255, 255, 0.05); /* Lighter translucent for cards */
+                --card-border: rgba(255, 255, 255, 0.15);
+                --summary-bg: rgba(255, 255, 255, 0.08);
+                --summary-hover: rgba(255, 255, 255, 0.12);
+                --btn-bg: #28a745; /* Success green */
+                --btn-hover: #218838;
+                --input-bg: rgba(0, 0, 0, 0.2);
+                --input-border: rgba(255, 255, 255, 0.2);
+                --animation-speed: 0.3s;
+                --toast-bg-success: #28a745;
+                --toast-bg-error: #dc3545;
+                --toast-bg-info: #17a2b8;
+                --toast-text-color: #ffffff;
+            }
+            body {
+                background-image: url('https://api.imlcd.cn/bg/gq.php');
+                background-size: cover;
+                background-position: center;
+                background-attachment: fixed;
+                color: var(--text-color);
+                font-family: 'Inter', sans-serif;
+                margin: 0;
+                padding: 20px;
+                font-size: 15px;
+                line-height: 1.6;
+            }
+            .container {
+                max-width: 900px;
+                margin: 0 auto;
+                background: var(--main-color);
+                backdrop-filter: blur(15px);
+                -webkit-backdrop-filter: blur(15px);
+                padding: 25px;
+                border-radius: 15px;
+                box-shadow: 0 15px 40px rgba(0,0,0,0.4);
+                border: 1px solid var(--border-color);
+                transition: transform 0.3s ease;
+            }
+            h1 {
+                text-align: center;
+                color: var(--heading-color);
+                border-bottom: 2px solid var(--border-color);
+                padding-bottom: 15px;
+                margin-bottom: 30px;
+                font-weight: 700;
+            }
+            details {
+                background: var(--card-bg);
+                margin-bottom: 15px;
+                border-radius: 10px;
+                border: 1px solid var(--card-border);
+                overflow: hidden;
+                box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+            }
+            summary {
+                padding: 15px 20px;
+                background: var(--summary-bg);
+                font-weight: 600;
+                cursor: pointer;
+                border-radius: 10px;
+                transition: background 0.3s ease, border-radius 0.3s ease;
+                list-style: none; /* Hide default triangle */
+                display: flex;
+                align-items: center;
+                gap: 10px;
+            }
+            summary .fa-chevron-right { /* Style for the arrow icon */
+                transition: transform var(--animation-speed) ease;
+            }
+            details[open] > summary .fa-chevron-right {
+                transform: rotate(90deg);
+            }
+            details[open] > summary {
+                border-bottom-left-radius: 0;
+                border-bottom-right-radius: 0;
+            }
+            summary:hover {
+                background: var(--summary-hover);
+            }
+            .content-wrapper {
+                overflow: hidden;
+                transition: max-height var(--animation-speed) ease-out;
+                max-height: 0;
+            }
+            details[open] .content-wrapper {
+                max-height: 1000px; /* Adjusted */
+                transition: max-height var(--animation-speed) ease-in;
+                padding: 15px 20px;
+                border-top: 1px solid var(--border-color);
+            }
+            a {
+                color: var(--link-color);
+                text-decoration: none;
+                transition: color 0.3s ease;
+            }
+            a:hover {
+                color: var(--link-hover);
+                text-decoration: underline;
+            }
+            strong {
+                color: var(--link-color);
+            }
+            .subscription-grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+                gap: 20px;
+                margin-top: 10px;
+            }
+            .subscription-link {
+                background: rgba(0,0,0,0.1);
+                padding: 15px;
+                border-radius: 8px;
+                border: 1px solid rgba(255, 255, 255, 0.1);
+                word-break: break-all;
+            }
+            .subscription-link strong {
+                display: block;
+                margin-bottom: 8px;
+                font-size: 1.1em;
+            }
+            .qr-code {
+                margin-top: 15px;
+                padding: 10px;
+                background: white;
+                border-radius: 5px;
+                display: inline-block;
+                box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            }
+            .editor {
+                width: 100%;
+                min-height: 350px;
+                margin: 15px 0;
+                padding: 15px;
+                box-sizing: border-box;
+                border: 1px solid var(--input-border);
+                border-radius: 8px;
+                font-size: 14px;
+                line-height: 1.6;
+                overflow-y: auto;
+                resize: vertical;
+                background: var(--input-bg);
+                color: var(--text-color);
+                font-family: 'Fira Code', 'Cascadia Code', 'Courier New', monospace; /* More modern code fonts */
+                box-shadow: inset 0 1px 3px rgba(0,0,0,0.3);
+            }
+            .save-container {
+                margin-top: 15px;
+                display: flex;
+                align-items: center;
+                gap: 15px;
+                flex-wrap: wrap; /* Allow wrapping on small screens */
+            }
+            .save-btn {
+                padding: 10px 25px;
+                color: var(--toast-text-color);
+                background: var(--btn-bg);
+                border: none;
+                border-radius: 6px;
+                cursor: pointer;
+                transition: background 0.3s ease, transform 0.2s ease;
+                font-size: 16px;
+                font-weight: 600;
+                display: flex;
+                align-items: center;
+                gap: 8px;
+            }
+            .save-btn:hover:not(:disabled) {
+                background: var(--btn-hover);
+                transform: translateY(-2px);
+            }
+            .save-btn:disabled {
+                background: #6c757d;
+                cursor: not-allowed;
+                opacity: 0.8;
+            }
+            .save-status {
+                font-size: 14px;
+                font-weight: 600;
+            }
+            .footer {
+                margin-top: 30px;
+                text-align: center;
+                font-size: 13px;
+                color: #b0b0b0;
+                border-top: 1px solid var(--border-color);
+                padding-top: 20px;
+            }
+            .form-group {
+                margin-bottom: 15px;
+            }
+            .form-group label {
+                display: block;
+                margin-bottom: 8px;
+                font-weight: 600;
+                color: var(--heading-color);
+            }
+            .form-group input[type="text"] {
+                width: calc(100% - 30px); /* Adjusted for padding and border */
+                padding: 12px 15px;
+                border: 1px solid var(--input-border);
+                border-radius: 6px;
+                background: var(--input-bg);
+                color: var(--text-color);
+                font-size: 15px;
+                box-sizing: border-box;
+                transition: border-color 0.3s ease, box-shadow 0.3s ease;
+            }
+            .form-group input[type="text"]:focus {
+                border-color: var(--link-color);
+                outline: none;
+                box-shadow: 0 0 0 3px rgba(0, 188, 212, 0.25);
+            }
 
-						<details open>
-							<summary>⚙️ 订阅转换配置 & Telegram (Converter Config & TG)</summary>
-							<div class="content-wrapper">
-								${hasKV ? `
-								<form id="configForm">
-                                    <div class="form-group">
-                                        <label for="subapi">订阅转换后端 (SUBAPI):</label>
-                                        <input type="text" id="subapi" name="subapi" value="${currentSettings.subApi}" placeholder="e.g., SUBAPI.cmliussss.net">
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="subconfig">订阅转换配置 (SUBCONFIG):</label>
-                                        <input type="text" id="subconfig" name="subconfig" value="${currentSettings.subConfig}" placeholder="e.g., https://raw.githubusercontent.com/cmliu/ACL4SSR/main/Clash/config/ACL4SSR_Online_MultiCountry.ini">
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="tgtoken">Telegram Bot Token (TG TOKEN):</label>
-                                        <input type="text" id="tgtoken" name="tgtoken" value="${currentSettings.tgToken}" placeholder="Optional: Your Telegram Bot Token">
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="tgid">Telegram Chat ID (TG ID):</label>
-                                        <input type="text" id="tgid" name="tgid" value="${currentSettings.tgId}" placeholder="Optional: Your Telegram Chat ID">
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="filename">文件名 (SUBNAME):</label>
-                                        <input type="text" id="filename" name="filename" value="${currentSettings.fileName}" placeholder="e.g., CF-Workers-SUB">
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="url302">302重定向URL (URL302):</label>
-                                        <input type="text" id="url302" name="url302" value="${currentSettings.url302}" placeholder="Optional: https://example.com">
-                                    </div>
-                                     <div class="form-group">
-                                        <label for="guesttoken">访客TOKEN (GUESTTOKEN):</label>
-                                        <input type="text" id="guesttoken" name="guesttoken" value="${currentSettings.guestToken}" placeholder="Optional: auto or UUID">
-                                    </div>
-                                    <div class="save-container">
-                                        <button class="save-btn" type="button" onclick="saveConfig(this)">保存配置</button>
-                                        <span class="save-status" id="configSaveStatus"></span>
-                                    </div>
-                                </form>
-								` : '<p>请在Cloudflare后台为此Worker绑定一个KV命名空间，变量名为 <strong>KV</strong></p>'}
-							</div>
-						</details>
+            /* Toast Notification Styles */
+            #toast-container {
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                z-index: 1000;
+            }
+            .toast {
+                background-color: var(--toast-bg-info);
+                color: var(--toast-text-color);
+                padding: 10px 20px;
+                border-radius: 5px;
+                margin-bottom: 10px;
+                opacity: 0;
+                transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out;
+                transform: translateX(100%);
+                box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+                min-width: 200px;
+                display: flex;
+                align-items: center;
+                gap: 10px;
+            }
+            .toast.show {
+                opacity: 1;
+                transform: translateX(0);
+            }
+            .toast.hide {
+                opacity: 0;
+                transform: translateX(100%);
+            }
+            .toast.success { background-color: var(--toast-bg-success); }
+            .toast.error { background-color: var(--toast-bg-error); }
+            .toast.info { background-color: var(--toast-bg-info); } /* Ensure info has a background */
+            .toast i {
+                font-size: 1.2em;
+            }
 
-						<details open>
-							<summary>📝 订阅列表编辑 (Editor)</summary>
-							<div class="content-wrapper">
-								${hasKV ? `
-								<textarea class="editor" 
-									placeholder="在此输入或粘贴节点和订阅链接，每行一个..."
-									id="content" name="content">${content}</textarea>
-								<div class="save-container">
-									<button class="save-btn" type="button" onclick="saveContent(this)">保存内容</button>
-									<span class="save-status" id="saveStatus"></span>
-								</div>
-								` : '<p>请在Cloudflare后台为此Worker绑定一个KV命名空间，变量名为 <strong>KV</strong></p>'}
-							</div>
-						</details>
-						
-						<div class="footer">
-							<p>
-								<a href="https://github.com/cmliu/CF-Workers-SUB" target="_blank">GitHub Project</a> | 
-								<a href="https://t.me/CMLiussss" target="_blank">Telegram Channel</a>
-							</p>
-							<p>User-Agent: ${request.headers.get('User-Agent')}</p>
-						</div>
-					</div>
+            /* Responsive Adjustments */
+            @media (max-width: 768px) {
+                .container {
+                    padding: 15px;
+                    margin: 10px;
+                }
+                h1 {
+                    font-size: 1.8em;
+                }
+                summary {
+                    font-size: 1em;
+                }
+                .subscription-grid {
+                    grid-template-columns: 1fr; /* Stack on smaller screens */
+                }
+                .save-container {
+                    flex-direction: column;
+                    align-items: stretch;
+                }
+                .save-btn {
+                    width: 100%;
+                    justify-content: center;
+                }
+                .form-group input[type="text"] {
+                    width: calc(100% - 20px);
+                }
+            }
+        </style>
+        <script src="https://cdn.jsdelivr.net/npm/@keeex/qrcodejs-kx@1.0.2/qrcode.min.js"></script>
+    </head>
+    <body>
+        <div id="toast-container"></div>
 
-					<script>
-					function copyToClipboard(text, qrcodeId) {
-						navigator.clipboard.writeText(text).then(() => {
-							alert('已复制到剪贴板');
-						}).catch(err => {
-							console.error('复制失败:', err);
-							alert('复制失败，请手动复制');
-						});
-						
-						const qrcodeDiv = document.getElementById(qrcodeId);
-						qrcodeDiv.innerHTML = ''; // Clear previous QR code
-						if (text) {
-							new QRCode(qrcodeDiv, {
-								text: text,
-								width: 150,
-								height: 150,
-								colorDark: "#000000",
-								colorLight: "#ffffff",
-								correctLevel: QRCode.CorrectLevel.H
-							});
-						}
-					}
-						
-					function replaceFullwidthColon() {
-						const text = document.getElementById('content').value;
-						document.getElementById('content').value = text.replace(/：/g, ':');
-					}
-					
-                    function saveContent(button) {
-                        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
-                        if (!isIOS) {
-                            replaceFullwidthColon();
+        <div class="container">
+            <h1>${currentSettings.fileName} 订阅管理面板</h1>
+            
+            <details open>
+                <summary><i class="fas fa-chevron-right"></i> <i class="fas fa-star"></i> 管理员订阅 (Admin Links)</summary>
+                <div class="content-wrapper">
+                    <div class="subscription-grid">
+                        <div class="subscription-link">
+                            <strong>自适应订阅:</strong><br>
+                            <a href="javascript:void(0)" onclick="copyAndGenerateQR('https://${url.hostname}/${mytoken}', 'qrcode_0', '自适应订阅')">https://${url.hostname}/${mytoken}</a>
+                            <div class="qr-code" id="qrcode_0"></div>
+                        </div>
+                        <div class="subscription-link">
+                            <strong>Base64:</strong><br>
+                            <a href="javascript:void(0)" onclick="copyAndGenerateQR('https://${url.hostname}/${mytoken}?b64', 'qrcode_1', 'Base64订阅')">https://${url.hostname}/${mytoken}?b64</a>
+                            <div class="qr-code" id="qrcode_1"></div>
+                        </div>
+                        <div class="subscription-link">
+                            <strong>Clash:</strong><br>
+                            <a href="javascript:void(0)" onclick="copyAndGenerateQR('https://${url.hostname}/${mytoken}?clash', 'qrcode_2', 'Clash订阅')">https://${url.hostname}/${mytoken}?clash</a>
+                            <div class="qr-code" id="qrcode_2"></div>
+                        </div>
+                        <div class="subscription-link">
+                            <strong>Sing-Box:</strong><br>
+                            <a href="javascript:void(0)" onclick="copyAndGenerateQR('https://${url.hostname}/${mytoken}?sb', 'qrcode_3', 'Sing-Box订阅')">https://${url.hostname}/${mytoken}?sb</a>
+                            <div class="qr-code" id="qrcode_3"></div>
+                        </div>
+                        <div class="subscription-link">
+                            <strong>Surge:</strong><br>
+                            <a href="javascript:void(0)" onclick="copyAndGenerateQR('https://${url.hostname}/${mytoken}?surge', 'qrcode_4', 'Surge订阅')">https://${url.hostname}/${mytoken}?surge</a>
+                            <div class="qr-code" id="qrcode_4"></div>
+                        </div>
+                        <div class="subscription-link">
+                            <strong>Loon:</strong><br>
+                            <a href="javascript:void(0)" onclick="copyAndGenerateQR('https://${url.hostname}/${mytoken}?loon', 'qrcode_5', 'Loon订阅')">https://${url.hostname}/${mytoken}?loon</a>
+                            <div class="qr-code" id="qrcode_5"></div>
+                        </div>
+                    </div>
+                </div>
+            </details>
+
+            <details>
+                <summary><i class="fas fa-chevron-right"></i> <i class="fas fa-user-friends"></i> 访客订阅 (Guest Links)</summary>
+                <div class="content-wrapper">
+                    <p>访客订阅仅可用于客户端获取节点，无法访问此管理页面。<br>访客TOKEN: <strong>${currentSettings.guestToken}</strong></p>
+                    <div class="subscription-grid">
+                        <div class="subscription-link">
+                            <strong>自适应订阅:</strong><br>
+                            <a href="javascript:void(0)" onclick="copyAndGenerateQR('https://${url.hostname}/sub?token=${currentSettings.guestToken}', 'guest_0', '访客自适应订阅')">https://${url.hostname}/sub?token=${currentSettings.guestToken}</a>
+                            <div class="qr-code" id="guest_0"></div>
+                        </div>
+                        <div class="subscription-link">
+                            <strong>Base64:</strong><br>
+                            <a href="javascript:void(0)" onclick="copyAndGenerateQR('https://${url.hostname}/sub?token=${currentSettings.guestToken}&b64', 'guest_1', '访客Base64订阅')">https://${url.hostname}/sub?token=${currentSettings.guestToken}&b64</a>
+                            <div class="qr-code" id="guest_1"></div>
+                        </div>
+                        <div class="subscription-link">
+                            <strong>Clash:</strong><br>
+                            <a href="javascript:void(0)" onclick="copyAndGenerateQR('https://${url.hostname}/sub?token=${currentSettings.guestToken}&clash', 'guest_2', '访客Clash订阅')">https://${url.hostname}/sub?token=${currentSettings.guestToken}&clash</a>
+                            <div class="qr-code" id="guest_2"></div>
+                        </div>
+                        <div class="subscription-link">
+                            <strong>Sing-Box:</strong><br>
+                            <a href="javascript:void(0)" onclick="copyAndGenerateQR('https://${url.hostname}/sub?token=${currentSettings.guestToken}&sb', 'guest_3', '访客Sing-Box订阅')">https://${url.hostname}/sub?token=${currentSettings.guestToken}&sb</a>
+                            <div class="qr-code" id="guest_3"></div>
+                        </div>
+                    </div>
+                </div>
+            </details>
+
+            <details open>
+                <summary><i class="fas fa-chevron-right"></i> <i class="fas fa-cog"></i> 订阅转换配置 & Telegram (Converter Config & TG)</summary>
+                <div class="content-wrapper">
+                    ${hasKV ? `
+                    <form id="configForm">
+                        <div class="form-group">
+                            <label for="subapi"><i class="fas fa-globe"></i> 订阅转换后端 (SUBAPI):</label>
+                            <input type="text" id="subapi" name="subapi" value="${currentSettings.subApi}" placeholder="e.g., SUBAPI.cmliussss.net">
+                        </div>
+                        <div class="form-group">
+                            <label for="subconfig"><i class="fas fa-file-alt"></i> 订阅转换配置 (SUBCONFIG):</label>
+                            <input type="text" id="subconfig" name="subconfig" value="${currentSettings.subConfig}" placeholder="e.g., https://raw.githubusercontent.com/cmliu/ACL4SSR/main/Clash/config/ACL4SSR_Online_MultiCountry.ini">
+                        </div>
+                        <div class="form-group">
+                            <label for="tgtoken"><i class="fab fa-telegram-plane"></i> Telegram Bot Token (TG TOKEN):</label>
+                            <input type="text" id="tgtoken" name="tgtoken" value="${currentSettings.tgToken}" placeholder="Optional: Your Telegram Bot Token">
+                        </div>
+                        <div class="form-group">
+                            <label for="tgid"><i class="fas fa-comments"></i> Telegram Chat ID (TG ID):</label>
+                            <input type="text" id="tgid" name="tgid" value="${currentSettings.tgId}" placeholder="Optional: Your Telegram Chat ID">
+                        </div>
+                        <div class="form-group">
+                            <label for="filename"><i class="fas fa-file-signature"></i> 文件名 (SUBNAME):</label>
+                            <input type="text" id="filename" name="filename" value="${currentSettings.fileName}" placeholder="e.g., CF-Workers-SUB">
+                        </div>
+                        <div class="form-group">
+                            <label for="url302"><i class="fas fa-external-link-alt"></i> 302重定向URL (URL302):</label>
+                            <input type="text" id="url302" name="url302" value="${currentSettings.url302}" placeholder="Optional: https://example.com">
+                        </div>
+                         <div class="form-group">
+                            <label for="guesttoken"><i class="fas fa-user-secret"></i> 访客TOKEN (GUESTTOKEN):</label>
+                            <input type="text" id="guesttoken" name="guesttoken" value="${currentSettings.guestToken}" placeholder="Optional: auto or UUID">
+                        </div>
+                        <div class="save-container">
+                            <button class="save-btn" type="button" onclick="saveConfig(this)">
+                                <i class="fas fa-save"></i> 保存配置
+                            </button>
+                            <span class="save-status" id="configSaveStatus"></span>
+                        </div>
+                    </form>
+                    ` : '<p>请在Cloudflare后台为此Worker绑定一个KV命名空间，变量名为 <strong>KV</strong></p>'}
+                </div>
+            </details>
+
+            <details open>
+                <summary><i class="fas fa-chevron-right"></i> <i class="fas fa-edit"></i> 订阅列表编辑 (Editor)</summary>
+                <div class="content-wrapper">
+                    ${hasKV ? `
+                    <textarea class="editor" 
+                        placeholder="在此输入或粘贴节点和订阅链接，每行一个..."
+                        id="content" name="content">${content}</textarea>
+                    <div class="save-container">
+                        <button class="save-btn" type="button" onclick="saveContent(this)">
+                            <i class="fas fa-save"></i> 保存内容
+                        </button>
+                        <span class="save-status" id="saveStatus"></span>
+                    </div>
+                    ` : '<p>请在Cloudflare后台为此Worker绑定一个KV命名空间，变量名为 <strong>KV</strong></p>'}
+                </div>
+            </details>
+            
+            <div class="footer">
+                <p>
+                    <a href="https://github.com/cmliu/CF-Workers-SUB" target="_blank"><i class="fab fa-github"></i> GitHub Project</a> | 
+                    <a href="https://t.me/CMLiussss" target="_blank"><i class="fab fa-telegram"></i> Telegram Channel</a>
+                </p>
+                <p>User-Agent: ${request.headers.get('User-Agent')}</p>
+            </div>
+        </div>
+
+        <script>
+            // Pass mytoken from worker to frontend JS
+            const mytoken = '${mytoken}'; 
+
+            function showToast(message, type = 'info', duration = 3000) {
+                const toastContainer = document.getElementById('toast-container');
+                const toast = document.createElement('div');
+                toast.classList.add('toast', type);
+                
+                let iconHtml = '';
+                if (type === 'success') iconHtml = '<i class="fas fa-check-circle"></i>';
+                else if (type === 'error') iconHtml = '<i class="fas fa-times-circle"></i>';
+                else iconHtml = '<i class="fas fa-info-circle"></i>'; // Default info icon
+
+                toast.innerHTML = \`\${iconHtml} \${message}\`;
+                toastContainer.appendChild(toast);
+
+                // Force reflow for animation
+                void toast.offsetWidth; 
+
+                toast.classList.add('show');
+
+                setTimeout(() => {
+                    toast.classList.remove('show');
+                    toast.classList.add('hide');
+                    toast.addEventListener('transitionend', () => toast.remove(), { once: true });
+                }, duration);
+            }
+
+            function generateQrCode(text, qrcodeId) {
+                const qrcodeDiv = document.getElementById(qrcodeId);
+                if (qrcodeDiv) {
+                    qrcodeDiv.innerHTML = ''; // Clear previous QR code
+                    if (text) {
+                        // Ensure QRCode library is loaded before use
+                        if (typeof QRCode !== 'undefined') {
+                            new QRCode(qrcodeDiv, {
+                                text: text,
+                                width: 120,
+                                height: 120,
+                                colorDark: "#000000",
+                                colorLight: "#ffffff",
+                                correctLevel: QRCode.CorrectLevel.H
+                            });
+                        } else {
+                            console.error('QRCode library is not loaded.');
                         }
-                        
+                    }
+                }
+            }
+
+            function copyAndGenerateQR(text, qrcodeId, typeName) {
+                navigator.clipboard.writeText(text).then(() => {
+                    showToast(\`\${typeName}链接已复制到剪贴板！\`, 'success');
+                    generateQrCode(text, qrcodeId); // Regenerate QR code on copy click if needed
+                }).catch(err => {
+                    console.error('复制失败:', err);
+                    showToast(\`复制\${typeName}链接失败，请手动复制！\`, 'error');
+                });
+            }
+                
+            function replaceFullwidthColon() {
+                const textarea = document.getElementById('content');
+                if (textarea) {
+                    textarea.value = textarea.value.replace(/：/g, ':');
+                }
+            }
+            
+            async function saveContent(button) {
+                const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+                if (!isIOS) {
+                    replaceFullwidthColon();
+                }
+                
+                const statusElem = document.getElementById('saveStatus');
+                button.disabled = true;
+                const originalButtonHtml = button.innerHTML; // Store original content
+                button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 保存中...'; // Loading animation
+                statusElem.textContent = ''; // Clear previous status
+                statusElem.style.color = '#f1c40f'; // Yellow for saving
+
+                const formData = new FormData();
+                formData.append('content', document.getElementById('content').value);
+
+                try {
+                    const response = await fetch(window.location.href, {
+                        method: 'POST',
+                        body: formData,
+                        cache: 'no-cache'
+                    });
+
+                    if (!response.ok) {
+                        const errorText = await response.text();
+                        throw new Error(\`HTTP error! status: \${response.status} - \${errorText}\`);
+                    }
+                    
+                    const now = new Date().toLocaleTimeString();
+                    document.title = \`保存成功 \${now}\`;
+                    statusElem.textContent = \`✅ 保存成功 at \${now}\`;
+                    statusElem.style.color = '#2ecc71';
+                    showToast('订阅内容已保存成功！', 'success');
+
+                } catch (error) {
+                    console.error('Save error:', error);
+                    statusElem.textContent = \`❌ 保存失败: \${error.message}\`;
+                    statusElem.style.color = '#e74c3c';
+                    showToast(\`订阅内容保存失败: \${error.message}\`, 'error');
+                } finally {
+                    button.innerHTML = originalButtonHtml; // Restore original content
+                    button.disabled = false;
+                    setTimeout(() => statusElem.textContent = '', 3000);
+                }
+            }
+
+            async function saveConfig(button) {
+                const statusElem = document.getElementById('configSaveStatus');
+                button.disabled = true;
+                const originalButtonHtml = button.innerHTML; // Store original content
+                button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 保存中...'; // Loading animation
+                statusElem.textContent = ''; // Clear previous status
+                statusElem.style.color = '#f1c40f'; // Yellow for saving
+
+                const formData = new FormData(document.getElementById('configForm'));
+                
+                try {
+                    const response = await fetch(window.location.href, {
+                        method: 'POST',
+                        body: formData,
+                        cache: 'no-cache'
+                    });
+
+                    if (!response.ok) {
+                        const errorText = await response.text();
+                        throw new Error(\`HTTP error! status: \${response.status} - \${errorText}\`);
+                    }
+                    
+                    const now = new Date().toLocaleTimeString();
+                    // Update the page title with the new filename immediately if it changed
+                    const newFileName = document.getElementById('filename').value;
+                    if (newFileName) {
+                        document.title = \`\${newFileName} 订阅管理面板\`;
+                    }
+                    
+                    statusElem.textContent = \`✅ 配置保存成功 at \${now}\`;
+                    statusElem.style.color = '#2ecc71';
+                    showToast('配置已保存成功！', 'success');
+
+                } catch (error) {
+                    console.error('Config save error:', error);
+                    statusElem.textContent = \`❌ 配置保存失败: \${error.message}\`;
+                    statusElem.style.color = '#e74c3c';
+                    showToast(\`配置保存失败: \${error.message}\`, 'error');
+                } finally {
+                    button.innerHTML = originalButtonHtml; // Restore original content
+                    button.disabled = false;
+                    setTimeout(() => statusElem.textContent = '', 3000);
+                }
+            }
+
+            // Auto-generate all QR codes on page load
+            document.addEventListener('DOMContentLoaded', () => {
+                const adminLinks = [
+                    { id: 'qrcode_0', url: 'https://${url.hostname}/${mytoken}' },
+                    { id: 'qrcode_1', url: 'https://${url.hostname}/${mytoken}?b64' },
+                    { id: 'qrcode_2', url: 'https://${url.hostname}/${mytoken}?clash' },
+                    { id: 'qrcode_3', url: 'https://${url.hostname}/${mytoken}?sb' },
+                    { id: 'qrcode_4', url: 'https://${url.hostname}/${mytoken}?surge' },
+                    { id: 'qrcode_5', url: 'https://${url.hostname}/${mytoken}?loon' }
+                ];
+                adminLinks.forEach(link => generateQrCode(link.url, link.id));
+
+                // Only generate guest QR codes if guestToken is not empty
+                const guestTokenValue = '${currentSettings.guestToken}'; // Get the actual value
+                if (guestTokenValue && guestTokenValue !== 'auto' && guestTokenValue !== 'null' && guestTokenValue !== 'undefined') {
+                    const guestLinks = [
+                        { id: 'guest_0', url: 'https://${url.hostname}/sub?token=${currentSettings.guestToken}' },
+                        { id: 'guest_1', url: 'https://${url.hostname}/sub?token=${currentSettings.guestToken}&b64' },
+                        { id: 'guest_2', url: 'https://${url.hostname}/sub?token=${currentSettings.guestToken}&clash' },
+                        { id: 'guest_3', url: 'https://${url.hostname}/sub?token=${currentSettings.guestToken}&sb' }
+                    ];
+                    guestLinks.forEach(link => generateQrCode(link.url, link.id));
+                }
+
+
+                // Auto-save for content editor
+                const contentTextarea = document.getElementById('content');
+                if (contentTextarea) {
+                    let timer;
+                    contentTextarea.addEventListener('input', () => {
+                        clearTimeout(timer);
                         const statusElem = document.getElementById('saveStatus');
-                        button.disabled = true;
-                        statusElem.textContent = '保存中...';
-
-                        const formData = new FormData();
-                        formData.append('content', document.getElementById('content').value);
-
-                        fetch(window.location.href, {
-                            method: 'POST',
-                            body: formData, // Send as FormData
-                            cache: 'no-cache'
-                        })
-                        .then(response => {
-                            if (!response.ok) {
-                                throw new Error(\`HTTP error! status: \${response.status}\`);
-                            }
-                            return response.text();
-                        })
-                        .then(result => {
-                            const now = new Date().toLocaleTimeString();
-                            document.title = \`保存成功 \${now}\`;
-                            statusElem.textContent = \`✅ 保存成功 at \${now}\`;
-                            statusElem.style.color = '#2ecc71';
-                        })
-                        .catch(error => {
-                            console.error('Save error:', error);
-                            statusElem.textContent = \`❌ 保存失败: \${error.message}\`;
-                            statusElem.style.color = '#e74c3c';
-                        })
-                        .finally(() => {
-                            button.textContent = '保存内容';
-                            button.disabled = false;
-                            setTimeout(() => statusElem.textContent = '', 3000);
-                        });
-                    }
-
-                    function saveConfig(button) {
-                        const statusElem = document.getElementById('configSaveStatus');
-                        button.disabled = true;
-                        statusElem.textContent = '保存中...';
-
-                        const formData = new FormData(document.getElementById('configForm'));
-                        
-                        fetch(window.location.href, {
-                            method: 'POST',
-                            body: formData, // Send as FormData
-                            cache: 'no-cache'
-                        })
-                        .then(response => {
-                            if (!response.ok) {
-                                throw new Error(\`HTTP error! status: \${response.status}\`);
-                            }
-                            return response.text();
-                        })
-                        .then(result => {
-                            const now = new Date().toLocaleTimeString();
-                            statusElem.textContent = \`✅ 配置保存成功 at \${now}\`;
-                            statusElem.style.color = '#2ecc71';
-                        })
-                        .catch(error => {
-                            console.error('Config save error:', error);
-                            statusElem.textContent = \`❌ 配置保存失败: \${error.message}\`;
-                            statusElem.style.color = '#e74c3c';
-                        })
-                        .finally(() => {
-                            button.textContent = '保存配置';
-                            button.disabled = false;
-                            setTimeout(() => statusElem.textContent = '', 3000);
-                        });
-                    }
+                        statusElem.textContent = '内容已修改，5秒后自动保存...';
+                        statusElem.style.color = '#f1c40f';
+                        timer = setTimeout(() => saveContent(document.querySelector('#content + .save-container .save-btn')), 5000);
+                    });
+                }
+            });
+        </script>
+    </body>
+</html>
+`;
 		
-					if (document.getElementById('content')) { // Check if the editor exists
-						let timer;
-						const textarea = document.getElementById('content');
 		
-						textarea.addEventListener('input', () => {
-							clearTimeout(timer);
-							const statusElem = document.getElementById('saveStatus');
-							statusElem.textContent = '内容已修改，5秒后自动保存...';
-							statusElem.style.color = '#f1c40f';
-							timer = setTimeout(() => saveContent(document.querySelector('#content + .save-container .save-btn')), 5000); // Target the correct button
-						});
-					}
-                    // No auto-save for config fields for now, user needs to click saveConfig button
-					<\/script>
-				</body>
-			</html>
-		`;
-
+	
 		return new Response(html, {
 			headers: { "Content-Type": "text/html;charset=utf-8" }
 		});
