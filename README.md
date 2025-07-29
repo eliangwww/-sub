@@ -1,4 +1,4 @@
-<img width="1886" height="961" alt="image" src="https://github.com/user-attachments/assets/d4a7fc9d-2a5f-4ea1-a585-9d98e2e7509b" /># ⚙ 自建汇聚订阅 CF-Workers-SUB
+# ⚙ 自建汇聚订阅 CF-Workers-SUB
 
 ![自建汇聚订阅 CF-Workers-SUB](https://backup.paste.916300.xyz/api/file-download/subpng)
 
