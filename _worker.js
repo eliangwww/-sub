@@ -11,15 +11,40 @@ let SUBUpdateTime = 6; //自定义订阅更新时间，单位小时
 let total = 99;//TB
 let timestamp = 4102329600000;//2099-12-31
 
+// --- 新增：地区访问白名单配置 ---
+// 默认允许 中国大陆、香港、澳门、台湾 访问。也可以通过环境变量 WHITELIST 修改（逗号分隔，如 CN,US,HK）。
+let WhiteList = 'CN,HK,MO,TW'; 
+// -----------------------------
+
 //节点链接 + 订阅链接
 let MainData = `
 https://raw.githubusercontent.com/mfuu/v2ray/master/v2ray
 `;
 
 let urls = [];
-let subConverter = "SUBAPI.cmliussss.net"; //在线订阅转换后端，目前使用CM的订阅转换功能。支持自建psub 可自行搭建https://github.com/bulianglin/psub
+let subConverter = "SUBAPI.cmliussss.net"; //在线订阅转换后端
 let subConfig = "https://raw.githubusercontent.com/cmliu/ACL4SSR/main/Clash/config/ACL4SSR_Online_MultiCountry.ini"; //订阅配置文件
 let subProtocol = 'https';
+
+export default {
+	async fetch(request, env) {
+		const userAgentHeader = request.headers.get('User-Agent');
+		const userAgent = userAgentHeader ? userAgentHeader.toLowerCase() : "null";
+		const url = new URL(request.url);
+
+		// ------ 地区白名单拦截逻辑 ------
+		const country = request.cf ? request.cf.country : 'Unknown';
+		const allowedRegions = (env.WHITELIST || WhiteList).split(',');
+		
+		// 排除 favicon 访问，对其他所有路径进行地区校验
+		if (url.pathname !== "/favicon.ico" && !allowedRegions.includes(country)) {
+			// 如果不在白名单，直接返回伪装的 Nginx 页面
+			return new Response(await nginx(), {
+				status: 403,
+				headers: { 'Content-Type': 'text/html; charset=UTF-8' },
+			});
+		}
+		// -------------------------------
 
 export default {
 	async fetch(request, env) {
@@ -825,4 +850,5 @@ async function KV(request, env, txt = 'ADD.txt', guest) {
 			headers: { "Content-Type": "text/plain;charset=utf-8" }
 		});
 	}
+
 }
