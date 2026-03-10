@@ -10,7 +10,7 @@ let SUBUpdateTime = 6; //自定义订阅更新时间，单位小时
 let total = 99;//TB
 let timestamp = 4102329600000;//2099-12-31
 // --- 新增：地区访问白名单配置 ---
-let WhiteList = 'CN,HK,MO,TW'; // 默认允许的地区代码
+let WhiteList = 'CN'; // 默认允许的地区代码
 
 //节点链接 + 订阅链接
 let MainData = `
@@ -279,31 +279,7 @@ async function ADD(envadd) {
 
 async function nginx() {
 	const text = `
-	<!DOCTYPE html>
-	<html>
-	<head>
-	<title>Welcome to nginx!</title>
-	<style>
-		body {
-			width: 35em;
-			margin: 0 auto;
-			font-family: Tahoma, Verdana, Arial, sans-serif;
-		}
-	</style>
-	</head>
-	<body>
-	<h1>Welcome to nginx!</h1>
-	<p>If you see this page, the nginx web server is successfully installed and
-	working. Further configuration is required.</p>
-	
-	<p>For online documentation and support please refer to
-	<a href="http://nginx.org/">nginx.org</a>.<br/>
-	Commercial support is available at
-	<a href="http://nginx.com/">nginx.com</a>.</p>
-	
-	<p><em>Thank you for using nginx.</em></p>
-	</body>
-	</html>
+Access denied: 你的地区不支持访问该网站。
 	`
 	return text;
 }
@@ -1262,4 +1238,5 @@ async function KV(request, env, txt = 'ADD.txt', guest, currentSettings = {}) {
 		});
 	}
 }
+
 
