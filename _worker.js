@@ -9,6 +9,8 @@ let FileName = 'CF-Workers-SUB';
 let SUBUpdateTime = 6; //自定义订阅更新时间，单位小时
 let total = 99;//TB
 let timestamp = 4102329600000;//2099-12-31
+// --- 新增：地区访问白名单配置 ---
+let WhiteList = 'CN,HK,MO,TW'; // 默认允许的地区代码
 
 //节点链接 + 订阅链接
 let MainData = `
@@ -28,12 +30,30 @@ let KV_TGID_KEY = 'TG_CHAT_ID';
 let KV_FILENAME_KEY = 'FILE_NAME';
 let KV_URL302_KEY = 'URL_302';
 let KV_GUESTTOKEN_KEY = 'GUEST_TOKEN';
+let KV_WHITELIST_KEY = 'WHITE_LIST'; // 新增 KV 键名
 
 export default {
 	async fetch(request, env) {
 		const userAgentHeader = request.headers.get('User-Agent');
 		const userAgent = userAgentHeader ? userAgentHeader.toLowerCase() : "null";
 		const url = new URL(request.url);
+		// ------ 新增：地区白名单拦截逻辑 ------
+		// 优先从环境变量或 KV 中读取，最后使用代码内置默认值
+		let allowedRegionsStr = env.WHITELIST || WhiteList;
+		if (env.KV) {
+			allowedRegionsStr = await env.KV.get(KV_WHITELIST_KEY) || allowedRegionsStr;
+		}
+		const allowedRegions = allowedRegionsStr.split(',');
+		const country = request.cf ? request.cf.country : 'Unknown';
+
+		// 排除 favicon，对其他路径进行校验
+		if (url.pathname !== "/favicon.ico" && !allowedRegions.includes(country)) {
+			return new Response(await nginx(), {
+				status: 403,
+				headers: { 'Content-Type': 'text/html; charset=UTF-8' },
+			});
+		}
+		// ------------------------------------
 		const token = url.searchParams.get('token');
 		mytoken = env.TOKEN || mytoken;
 		TG = env.TG || TG;
@@ -1242,3 +1262,4 @@ async function KV(request, env, txt = 'ADD.txt', guest, currentSettings = {}) {
 		});
 	}
 }
+
