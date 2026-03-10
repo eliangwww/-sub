@@ -43,9 +43,8 @@ export default {
 				status: 403,
 				headers: { 'Content-Type': 'text/html; charset=UTF-8' },
 			});
-		}
-		// -------------------------------
-
+		};
+// -------------------------------
 export default {
 	async fetch(request, env) {
 		const userAgentHeader = request.headers.get('User-Agent');
@@ -852,3 +851,4 @@ async function KV(request, env, txt = 'ADD.txt', guest) {
 	}
 
 }
+
