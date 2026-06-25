@@ -44,5 +44,5 @@ CF-Workers-SUB 曾是一个基于 Cloudflare Workers/Pages 的订阅汇聚工具
 ---
 
 <p align="center">
-  <em>本项目归档于 2025 年，感谢一路相伴 🎉</em>
+  <em>本项目归档于 2026 年，感谢一路相伴 🎉</em>
 </p>
