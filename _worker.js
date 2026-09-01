@@ -910,6 +910,7 @@ async function KV(request, env, txt = 'ADD.txt', guest, currentSettings = {}) {
                             <div class="qr-code" id="qrcode_0"></div>
                         </div>
                         <div class="subscription-link">
+<<<<<<< HEAD
                             <strong>Clash / Clash Meta / Mihomo:</strong><br>
                             <a href="javascript:void(0)" onclick="copyAndGenerateQR('https://${url.hostname}/${mytoken}?clash', 'qrcode_1', 'Clash订阅')">https://${url.hostname}/${mytoken}?clash</a>
                             <div class="qr-code" id="qrcode_1"></div>
@@ -943,6 +944,31 @@ async function KV(request, env, txt = 'ADD.txt', guest, currentSettings = {}) {
                             <strong>Loon:</strong><br>
                             <a href="javascript:void(0)" onclick="copyAndGenerateQR('https://${url.hostname}/${mytoken}?loon', 'qrcode_7', 'Loon订阅')">https://${url.hostname}/${mytoken}?loon</a>
                             <div class="qr-code" id="qrcode_7"></div>
+=======
+                            <strong>Base64:</strong><br>
+                            <a href="javascript:void(0)" onclick="copyAndGenerateQR('https://${url.hostname}/${mytoken}?b64', 'qrcode_1', 'Base64订阅')">https://${url.hostname}/${mytoken}?b64</a>
+                            <div class="qr-code" id="qrcode_1"></div>
+                        </div>
+                        <div class="subscription-link">
+                            <strong>Clash:</strong><br>
+                            <a href="javascript:void(0)" onclick="copyAndGenerateQR('https://${url.hostname}/${mytoken}?clash', 'qrcode_2', 'Clash订阅')">https://${url.hostname}/${mytoken}?clash</a>
+                            <div class="qr-code" id="qrcode_2"></div>
+                        </div>
+                        <div class="subscription-link">
+                            <strong>Sing-Box:</strong><br>
+                            <a href="javascript:void(0)" onclick="copyAndGenerateQR('https://${url.hostname}/${mytoken}?sb', 'qrcode_3', 'Sing-Box订阅')">https://${url.hostname}/${mytoken}?sb</a>
+                            <div class="qr-code" id="qrcode_3"></div>
+                        </div>
+                        <div class="subscription-link">
+                            <strong>Surge:</strong><br>
+                            <a href="javascript:void(0)" onclick="copyAndGenerateQR('https://${url.hostname}/${mytoken}?surge', 'qrcode_4', 'Surge订阅')">https://${url.hostname}/${mytoken}?surge</a>
+                            <div class="qr-code" id="qrcode_4"></div>
+                        </div>
+                        <div class="subscription-link">
+                            <strong>Loon:</strong><br>
+                            <a href="javascript:void(0)" onclick="copyAndGenerateQR('https://${url.hostname}/${mytoken}?loon', 'qrcode_5', 'Loon订阅')">https://${url.hostname}/${mytoken}?loon</a>
+                            <div class="qr-code" id="qrcode_5"></div>
+>>>>>>> 5bde27140cfc0e63d14ed6cc25793478360f6c39
                         </div>
                     </div>
                 </div>
@@ -959,6 +985,7 @@ async function KV(request, env, txt = 'ADD.txt', guest, currentSettings = {}) {
                             <div class="qr-code" id="guest_0"></div>
                         </div>
                         <div class="subscription-link">
+<<<<<<< HEAD
                             <strong>Clash / Clash Meta / Mihomo:</strong><br>
                             <a href="javascript:void(0)" onclick="copyAndGenerateQR('https://${url.hostname}/sub?token=${currentSettings.guestToken}&clash', 'guest_1', '访客Clash订阅')">https://${url.hostname}/sub?token=${currentSettings.guestToken}&clash</a>
                             <div class="qr-code" id="guest_1"></div>
@@ -993,6 +1020,22 @@ async function KV(request, env, txt = 'ADD.txt', guest, currentSettings = {}) {
                             <a href="javascript:void(0)" onclick="copyAndGenerateQR('https://${url.hostname}/sub?token=${currentSettings.guestToken}&loon', 'guest_7', '访客Loon订阅')">https://${url.hostname}/sub?token=${currentSettings.guestToken}&loon</a>
                             <div class="qr-code" id="guest_7"></div>
                         </div>
+=======
+                            <strong>Base64:</strong><br>
+                            <a href="javascript:void(0)" onclick="copyAndGenerateQR('https://${url.hostname}/sub?token=${currentSettings.guestToken}&b64', 'guest_1', '访客Base64订阅')">https://${url.hostname}/sub?token=${currentSettings.guestToken}&b64</a>
+                            <div class="qr-code" id="guest_1"></div>
+                        </div>
+                        <div class="subscription-link">
+                            <strong>Clash:</strong><br>
+                            <a href="javascript:void(0)" onclick="copyAndGenerateQR('https://${url.hostname}/sub?token=${currentSettings.guestToken}&clash', 'guest_2', '访客Clash订阅')">https://${url.hostname}/sub?token=${currentSettings.guestToken}&clash</a>
+                            <div class="qr-code" id="guest_2"></div>
+                        </div>
+                        <div class="subscription-link">
+                            <strong>Sing-Box:</strong><br>
+                            <a href="javascript:void(0)" onclick="copyAndGenerateQR('https://${url.hostname}/sub?token=${currentSettings.guestToken}&sb', 'guest_3', '访客Sing-Box订阅')">https://${url.hostname}/sub?token=${currentSettings.guestToken}&sb</a>
+                            <div class="qr-code" id="guest_3"></div>
+                        </div>
+>>>>>>> 5bde27140cfc0e63d14ed6cc25793478360f6c39
                     </div>
                 </div>
             </details>
@@ -1230,6 +1273,7 @@ async function KV(request, env, txt = 'ADD.txt', guest, currentSettings = {}) {
             document.addEventListener('DOMContentLoaded', () => {
                 const adminLinks = [
                     { id: 'qrcode_0', url: 'https://${url.hostname}/${mytoken}' },
+<<<<<<< HEAD
                     { id: 'qrcode_1', url: 'https://${url.hostname}/${mytoken}?clash' },
                     { id: 'qrcode_2', url: 'https://${url.hostname}/${mytoken}?sb' },
                     { id: 'qrcode_3', url: 'https://${url.hostname}/${mytoken}?surge' },
@@ -1237,6 +1281,13 @@ async function KV(request, env, txt = 'ADD.txt', guest, currentSettings = {}) {
                     { id: 'qrcode_5', url: 'https://${url.hostname}/${mytoken}?b64' },
                     { id: 'qrcode_6', url: 'https://${url.hostname}/${mytoken}?quanx' },
                     { id: 'qrcode_7', url: 'https://${url.hostname}/${mytoken}?loon' }
+=======
+                    { id: 'qrcode_1', url: 'https://${url.hostname}/${mytoken}?b64' },
+                    { id: 'qrcode_2', url: 'https://${url.hostname}/${mytoken}?clash' },
+                    { id: 'qrcode_3', url: 'https://${url.hostname}/${mytoken}?sb' },
+                    { id: 'qrcode_4', url: 'https://${url.hostname}/${mytoken}?surge' },
+                    { id: 'qrcode_5', url: 'https://${url.hostname}/${mytoken}?loon' }
+>>>>>>> 5bde27140cfc0e63d14ed6cc25793478360f6c39
                 ];
                 adminLinks.forEach(link => generateQrCode(link.url, link.id));
 
@@ -1245,6 +1296,7 @@ async function KV(request, env, txt = 'ADD.txt', guest, currentSettings = {}) {
                 if (guestTokenValue && guestTokenValue !== 'auto' && guestTokenValue !== 'null' && guestTokenValue !== 'undefined') {
                     const guestLinks = [
                         { id: 'guest_0', url: 'https://${url.hostname}/sub?token=${currentSettings.guestToken}' },
+<<<<<<< HEAD
                         { id: 'guest_1', url: 'https://${url.hostname}/sub?token=${currentSettings.guestToken}&clash' },
                         { id: 'guest_2', url: 'https://${url.hostname}/sub?token=${currentSettings.guestToken}&sb' },
                         { id: 'guest_3', url: 'https://${url.hostname}/sub?token=${currentSettings.guestToken}&surge' },
@@ -1252,6 +1304,11 @@ async function KV(request, env, txt = 'ADD.txt', guest, currentSettings = {}) {
                         { id: 'guest_5', url: 'https://${url.hostname}/sub?token=${currentSettings.guestToken}&b64' },
                         { id: 'guest_6', url: 'https://${url.hostname}/sub?token=${currentSettings.guestToken}&quanx' },
                         { id: 'guest_7', url: 'https://${url.hostname}/sub?token=${currentSettings.guestToken}&loon' }
+=======
+                        { id: 'guest_1', url: 'https://${url.hostname}/sub?token=${currentSettings.guestToken}&b64' },
+                        { id: 'guest_2', url: 'https://${url.hostname}/sub?token=${currentSettings.guestToken}&clash' },
+                        { id: 'guest_3', url: 'https://${url.hostname}/sub?token=${currentSettings.guestToken}&sb' }
+>>>>>>> 5bde27140cfc0e63d14ed6cc25793478360f6c39
                     ];
                     guestLinks.forEach(link => generateQrCode(link.url, link.id));
                 }
