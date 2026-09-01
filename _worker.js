@@ -12,6 +12,12 @@ let timestamp = 4102329600000;//2099-12-31
 // --- 新增：地区访问白名单配置 ---
 let WhiteList = ''; // 留空 = 不限制地区；多个地区用逗号分隔，如 'CN,HK,TW'
 
+// 非白名单客户端拉取订阅时下发的假节点（均指向 127.0.0.1，不可用）
+let FakeData = `
+vless://8c7a2b4e-1f5d-4c3a-9e6b-0d2f8a1c5b74@127.0.0.1:443?encryption=none&security=tls&sni=example.com&type=ws&host=example.com&path=%2F#订阅已失效
+trojan://ZmFrZS1wYXNzd29yZA@127.0.0.1:8443?security=tls&sni=example.com&type=tcp&headerType=none#请使用受支持的客户端
+`;
+
 //节点链接 + 订阅链接
 let MainData = `
 https://raw.githubusercontent.com/mfuu/v2ray/master/v2ray
@@ -31,6 +37,7 @@ let KV_FILENAME_KEY = 'FILE_NAME';
 let KV_URL302_KEY = 'URL_302';
 let KV_GUESTTOKEN_KEY = 'GUEST_TOKEN';
 let KV_WHITELIST_KEY = 'WHITE_LIST'; // 新增 KV 键名
+let KV_FAKEDATA_KEY = 'FAKE_DATA';
 
 export default {
 	async fetch(request, env) {
@@ -110,7 +117,7 @@ export default {
 			const 是回源 = token === fakeToken || isInternalUA(userAgent);
 			if (!是浏览器 && !是回源 && !isClientUA(userAgent)) {
 				if (TG == 1) await sendMessage(`#非客户端UA ${FileName}`, request.headers.get('CF-Connecting-IP'), `UA: ${userAgent}</tg-spoiler>\n域名: ${url.hostname}\n<tg-spoiler>入口: ${url.pathname + url.search}</tg-spoiler>`);
-				return new Response('Forbidden', { status: 403, headers: { 'Content-Type': 'text/plain; charset=UTF-8' } });
+				return await 生成假订阅(env, url, userAgent);
 			}
 			if (env.KV) {
 				await 迁移地址列表(env, 'LINK.txt');
@@ -147,20 +154,7 @@ export default {
 			urls = await ADD(订阅链接);
 			await sendMessage(`#获取订阅 ${FileName}`, request.headers.get('CF-Connecting-IP'), `UA: ${userAgentHeader}</tg-spoiler>\n域名: ${url.hostname}\n<tg-spoiler>入口: ${url.pathname + url.search}</tg-spoiler>`);
 
-			let 订阅格式 = 'base64';
-			if (!(userAgent.includes('null') || userAgent.includes('subconverter') || userAgent.includes('nekobox') || userAgent.includes(('CF-Workers-SUB').toLowerCase()))) {
-				if (userAgent.includes('sing-box') || userAgent.includes('singbox') || url.searchParams.has('sb') || url.searchParams.has('singbox')) {
-					订阅格式 = 'singbox';
-				} else if (userAgent.includes('surge') || url.searchParams.has('surge')) {
-					订阅格式 = 'surge';
-				} else if (userAgent.includes('quantumult') || url.searchParams.has('quanx')) {
-					订阅格式 = 'quanx';
-				} else if (userAgent.includes('loon') || url.searchParams.has('loon')) {
-					订阅格式 = 'loon';
-				} else if (userAgent.includes('clash') || userAgent.includes('meta') || userAgent.includes('mihomo') || url.searchParams.has('clash')) {
-					订阅格式 = 'clash';
-				}
-			}
+			let 订阅格式 = 判断订阅格式(userAgent, url);
 
 			let subConverterUrl;
 			let 订阅转换URL = `${url.origin}/${await MD5MD5(fakeToken)}?token=${fakeToken}`;
@@ -311,6 +305,54 @@ function isClientUA(ua) {
 function isInternalUA(ua) {
 	if (!ua) return false;
 	return ua.includes('subconverter') || ua.includes('cf-workers-sub');
+}
+
+function 判断订阅格式(userAgent, url) {
+	if (userAgent.includes('null') || userAgent.includes('subconverter') || userAgent.includes('nekobox') || userAgent.includes(('CF-Workers-SUB').toLowerCase())) {
+		return 'base64';
+	}
+	if (userAgent.includes('sing-box') || userAgent.includes('singbox') || url.searchParams.has('sb') || url.searchParams.has('singbox')) return 'singbox';
+	if (userAgent.includes('surge') || url.searchParams.has('surge')) return 'surge';
+	if (userAgent.includes('quantumult') || url.searchParams.has('quanx')) return 'quanx';
+	if (userAgent.includes('loon') || url.searchParams.has('loon')) return 'loon';
+	if (userAgent.includes('clash') || userAgent.includes('meta') || userAgent.includes('mihomo') || url.searchParams.has('clash')) return 'clash';
+	return 'base64';
+}
+
+// 非白名单 UA 命中时下发的假订阅，行为上与真订阅一致以免暴露差异
+async function 生成假订阅(env, url, userAgent) {
+	let 假数据 = FakeData;
+	if (env.KV) 假数据 = (await env.KV.get(KV_FAKEDATA_KEY)) || 假数据;
+
+	const 节点 = (await ADD(假数据)).filter(x => x.includes('://'));
+	const base64Data = btoa(unescape(encodeURIComponent(节点.join('\n'))));
+
+	const responseHeaders = {
+		"content-type": "text/plain; charset=utf-8",
+		"Profile-Update-Interval": `${SUBUpdateTime}`,
+		"Profile-web-page-url": url.origin + url.pathname,
+	};
+	if (!userAgent.includes('mozilla')) {
+		responseHeaders["Content-Disposition"] = `attachment; filename*=utf-8''${encodeURIComponent(FileName)}`;
+	}
+
+	let 订阅格式 = url.searchParams.has('b64') || url.searchParams.has('base64') ? 'base64' : 判断订阅格式(userAgent, url);
+	if (订阅格式 === 'base64' || 节点.length === 0) {
+		return new Response(base64Data, { headers: responseHeaders });
+	}
+
+	// subconverter 的 url 参数可直接接收节点链接，无需真实订阅地址
+	const target = 订阅格式 === 'surge' ? 'surge&ver=4' : 订阅格式;
+	const subConverterUrl = `${subProtocol}://${subConverter}/sub?target=${target}&url=${encodeURIComponent(节点.join('|'))}&insert=false&config=${encodeURIComponent(subConfig)}&emoji=true&list=false&tfo=false&scv=true&fdn=false&sort=false&new_name=true`;
+	try {
+		const res = await fetch(subConverterUrl);
+		if (!res.ok) return new Response(base64Data, { headers: responseHeaders });
+		let text = await res.text();
+		if (订阅格式 === 'clash') text = await clashFix(text);
+		return new Response(text, { headers: responseHeaders });
+	} catch {
+		return new Response(base64Data, { headers: responseHeaders });
+	}
 }
 
 async function sendMessage(type, ip, add_data = "") {
@@ -568,6 +610,7 @@ async function KV(request, env, txt = 'ADD.txt', guest, currentSettings = {}) {
 				const newUrl302 = formData.get('url302');
 				const newGuestToken = formData.get('guesttoken');
 				const newWhiteList = formData.get('whitelist');
+				const newFakeData = formData.get('fakedata');
 
 				// Save subscription list content
 				if (content !== null) { // Check if content field exists in form
@@ -583,6 +626,7 @@ async function KV(request, env, txt = 'ADD.txt', guest, currentSettings = {}) {
 				if (newUrl302 !== null) await env.KV.put(KV_URL302_KEY, newUrl302);
 				if (newGuestToken !== null) await env.KV.put(KV_GUESTTOKEN_KEY, newGuestToken);
 				if (newWhiteList !== null) await env.KV.put(KV_WHITELIST_KEY, newWhiteList.trim());
+				if (newFakeData !== null) await env.KV.put(KV_FAKEDATA_KEY, newFakeData);
 
 				return new Response("保存成功");
 			} catch (error) {
@@ -593,6 +637,7 @@ async function KV(request, env, txt = 'ADD.txt', guest, currentSettings = {}) {
 
 		// GET request part with new frontend
 		let content = '';
+		let fakeContent = '';
 		let hasKV = !!env.KV;
 
 		if (hasKV) {
@@ -606,6 +651,7 @@ async function KV(request, env, txt = 'ADD.txt', guest, currentSettings = {}) {
                 currentSettings.url302 = await env.KV.get(KV_URL302_KEY) || currentSettings.url302 || env.URL302;
                 currentSettings.guestToken = await env.KV.get(KV_GUESTTOKEN_KEY) || currentSettings.guestToken || guestToken;
                 currentSettings.whiteList = (await env.KV.get(KV_WHITELIST_KEY)) ?? currentSettings.whiteList ?? '';
+                fakeContent = (await env.KV.get(KV_FAKEDATA_KEY)) ?? FakeData.trim();
 			} catch (error) {
 				console.error('读取KV时发生错误:', error);
 				content = '读取数据时发生错误: ' + error.message;
@@ -1037,6 +1083,24 @@ async function KV(request, env, txt = 'ADD.txt', guest, currentSettings = {}) {
                     ` : '<p>请在Cloudflare后台为此Worker绑定一个KV命名空间，变量名为 <strong>KV</strong></p>'}
                 </div>
             </details>
+
+            <details>
+                <summary><i class="fas fa-chevron-right"></i> <i class="fas fa-mask"></i> 假订阅编辑 (Fake Subscription)</summary>
+                <div class="content-wrapper">
+                    ${hasKV ? `
+                    <p class="hint"><i class="fas fa-circle-info"></i> 不在客户端白名单的 User-Agent 拉取订阅时，会正常返回这里的内容（而不是 403）。建议只放指向 127.0.0.1 等不可用地址的节点，不要放真实节点。</p>
+                    <textarea class="editor" style="min-height:200px"
+                        placeholder="每行一个节点链接，如 vless://...@127.0.0.1:443#订阅已失效"
+                        id="fakedata" name="fakedata">${fakeContent}</textarea>
+                    <div class="save-container">
+                        <button class="save-btn" type="button" onclick="saveFakeData(this)">
+                            <i class="fas fa-save"></i> 保存假订阅
+                        </button>
+                        <span class="save-status" id="fakeSaveStatus"></span>
+                    </div>
+                    ` : '<p>请在Cloudflare后台为此Worker绑定一个KV命名空间，变量名为 <strong>KV</strong></p>'}
+                </div>
+            </details>
             
             <div class="footer">
                 <p>
@@ -1156,6 +1220,43 @@ async function KV(request, env, txt = 'ADD.txt', guest, currentSettings = {}) {
                     showToast(\`订阅内容保存失败: \${error.message}\`, 'error');
                 } finally {
                     button.innerHTML = originalButtonHtml; // Restore original content
+                    button.disabled = false;
+                    setTimeout(() => statusElem.textContent = '', 3000);
+                }
+            }
+
+            async function saveFakeData(button) {
+                const statusElem = document.getElementById('fakeSaveStatus');
+                button.disabled = true;
+                const originalButtonHtml = button.innerHTML;
+                button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 保存中...';
+                statusElem.textContent = '';
+                statusElem.style.color = '#f1c40f';
+
+                const formData = new FormData();
+                formData.append('fakedata', document.getElementById('fakedata').value);
+
+                try {
+                    const response = await fetch(window.location.href, {
+                        method: 'POST',
+                        body: formData,
+                        cache: 'no-cache'
+                    });
+                    if (!response.ok) {
+                        const errorText = await response.text();
+                        throw new Error(\`HTTP error! status: \${response.status} - \${errorText}\`);
+                    }
+                    const now = new Date().toLocaleTimeString();
+                    statusElem.textContent = \`✅ 保存成功 at \${now}\`;
+                    statusElem.style.color = '#2ecc71';
+                    showToast('假订阅已保存成功！', 'success');
+                } catch (error) {
+                    console.error('Fake data save error:', error);
+                    statusElem.textContent = \`❌ 保存失败: \${error.message}\`;
+                    statusElem.style.color = '#e74c3c';
+                    showToast(\`假订阅保存失败: \${error.message}\`, 'error');
+                } finally {
+                    button.innerHTML = originalButtonHtml;
                     button.disabled = false;
                     setTimeout(() => statusElem.textContent = '', 3000);
                 }
