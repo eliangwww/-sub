@@ -105,6 +105,13 @@ export default {
 			else if (env.URL) return await proxyURL(env.URL, url);
 			else return new Response('Forbidden', { status: 403, headers: { 'Content-Type': 'text/plain; charset=UTF-8' } });
 		} else {
+			const 是浏览器 = userAgent.includes('mozilla');
+			// fakeToken 与 subconverter 为订阅转换回源，必须豁免
+			const 是回源 = token === fakeToken || isInternalUA(userAgent);
+			if (!是浏览器 && !是回源 && !isClientUA(userAgent)) {
+				if (TG == 1) await sendMessage(`#非客户端UA ${FileName}`, request.headers.get('CF-Connecting-IP'), `UA: ${userAgent}</tg-spoiler>\n域名: ${url.hostname}\n<tg-spoiler>入口: ${url.pathname + url.search}</tg-spoiler>`);
+				return new Response('Forbidden', { status: 403, headers: { 'Content-Type': 'text/plain; charset=UTF-8' } });
+			}
 			if (env.KV) {
 				await 迁移地址列表(env, 'LINK.txt');
 				if (userAgent.includes('mozilla') && !url.search) {
@@ -294,9 +301,16 @@ function isClientUA(ua) {
 		'loon',
 		'v2rayn', 'v2rayng',
 		'stash', 'surfboard',
+		'nekobox', 'nekoray', 'hiddify', 'karing', 'flclash',
 	];
 	if (!ua || ua === 'null') return false;
 	return clientKeywords.some(kw => ua.includes(kw));
+}
+
+// 订阅转换后端回源、以及本程序自身发出的请求
+function isInternalUA(ua) {
+	if (!ua) return false;
+	return ua.includes('subconverter') || ua.includes('cf-workers-sub');
 }
 
 async function sendMessage(type, ip, add_data = "") {
@@ -598,6 +612,30 @@ async function KV(request, env, txt = 'ADD.txt', guest, currentSettings = {}) {
 			}
 		}
 
+		const 客户端列表 = [
+			{ name: '自适应 / 通用', icon: 'fa-wand-magic-sparkles', param: '' },
+			{ name: 'Clash / Clash Meta / Mihomo', icon: 'fa-bolt', param: 'clash' },
+			{ name: 'Sing-Box', icon: 'fa-cube', param: 'sb' },
+			{ name: 'Surge', icon: 'fa-wave-square', param: 'surge' },
+			{ name: 'Shadowrocket', icon: 'fa-rocket', param: 'b64' },
+			{ name: 'V2rayN / V2rayNG', icon: 'fa-shield-halved', param: 'b64' },
+			{ name: 'Quantumult X', icon: 'fa-atom', param: 'quanx' },
+			{ name: 'Loon', icon: 'fa-moon', param: 'loon' }
+		];
+		const buildItems = (base, sep, idPrefix) => 客户端列表.map((c, i) => ({
+			...c,
+			id: `${idPrefix}_${i}`,
+			url: c.param ? `${base}${sep}${c.param}` : base
+		}));
+		const adminItems = buildItems(`https://${url.hostname}/${mytoken}`, '?', 'qrcode');
+		const guestItems = buildItems(`https://${url.hostname}/sub?token=${currentSettings.guestToken}`, '&', 'guest');
+		const renderCards = (items, 前缀) => items.map(it => `
+                        <div class="subscription-link">
+                            <strong><i class="fas ${it.icon}"></i> ${it.name}</strong>
+                            <a href="javascript:void(0)" onclick="copyAndGenerateQR('${it.url}', '${it.id}', '${前缀}${it.name}')">${it.url}</a>
+                            <div class="qr-code" id="${it.id}"></div>
+                        </div>`).join('');
+
 		const html = `
 		<!DOCTYPE html>
 <html>
@@ -733,9 +771,23 @@ async function KV(request, env, txt = 'ADD.txt', guest, currentSettings = {}) {
                 word-break: break-all;
             }
             .subscription-link strong {
-                display: block;
+                display: flex;
+                align-items: center;
+                gap: 8px;
                 margin-bottom: 8px;
-                font-size: 1.1em;
+                font-size: 1.05em;
+            }
+            .subscription-link a {
+                font-size: 0.88em;
+                opacity: 0.9;
+            }
+            .hint {
+                margin: 0 0 15px;
+                padding: 10px 14px;
+                background: rgba(0, 188, 212, 0.1);
+                border-left: 3px solid var(--link-color);
+                border-radius: 6px;
+                font-size: 0.9em;
             }
             .qr-code {
                 margin-top: 15px;
@@ -906,47 +958,8 @@ async function KV(request, env, txt = 'ADD.txt', guest, currentSettings = {}) {
             <details open>
                 <summary><i class="fas fa-chevron-right"></i> <i class="fas fa-star"></i> 管理员订阅 (Admin Links)</summary>
                 <div class="content-wrapper">
-                    <div class="subscription-grid">
-                        <div class="subscription-link">
-                            <strong>自适应订阅:</strong><br>
-                            <a href="javascript:void(0)" onclick="copyAndGenerateQR('https://${url.hostname}/${mytoken}', 'qrcode_0', '自适应订阅')">https://${url.hostname}/${mytoken}</a>
-                            <div class="qr-code" id="qrcode_0"></div>
-                        </div>
-                        <div class="subscription-link">
-                            <strong>Clash / Clash Meta / Mihomo:</strong><br>
-                            <a href="javascript:void(0)" onclick="copyAndGenerateQR('https://${url.hostname}/${mytoken}?clash', 'qrcode_1', 'Clash订阅')">https://${url.hostname}/${mytoken}?clash</a>
-                            <div class="qr-code" id="qrcode_1"></div>
-                        </div>
-                        <div class="subscription-link">
-                            <strong>Sing-Box:</strong><br>
-                            <a href="javascript:void(0)" onclick="copyAndGenerateQR('https://${url.hostname}/${mytoken}?sb', 'qrcode_2', 'Sing-Box订阅')">https://${url.hostname}/${mytoken}?sb</a>
-                            <div class="qr-code" id="qrcode_2"></div>
-                        </div>
-                        <div class="subscription-link">
-                            <strong>Surge:</strong><br>
-                            <a href="javascript:void(0)" onclick="copyAndGenerateQR('https://${url.hostname}/${mytoken}?surge', 'qrcode_3', 'Surge订阅')">https://${url.hostname}/${mytoken}?surge</a>
-                            <div class="qr-code" id="qrcode_3"></div>
-                        </div>
-                        <div class="subscription-link">
-                            <strong>Shadowrocket:</strong><br>
-                            <a href="javascript:void(0)" onclick="copyAndGenerateQR('https://${url.hostname}/${mytoken}?b64', 'qrcode_4', 'Shadowrocket订阅')">https://${url.hostname}/${mytoken}?b64</a>
-                            <div class="qr-code" id="qrcode_4"></div>
-                        </div>
-                        <div class="subscription-link">
-                            <strong>V2rayN / V2rayNG:</strong><br>
-                            <a href="javascript:void(0)" onclick="copyAndGenerateQR('https://${url.hostname}/${mytoken}?b64', 'qrcode_5', 'V2rayN订阅')">https://${url.hostname}/${mytoken}?b64</a>
-                            <div class="qr-code" id="qrcode_5"></div>
-                        </div>
-                        <div class="subscription-link">
-                            <strong>Quantumult X:</strong><br>
-                            <a href="javascript:void(0)" onclick="copyAndGenerateQR('https://${url.hostname}/${mytoken}?quanx', 'qrcode_6', 'Quantumult X订阅')">https://${url.hostname}/${mytoken}?quanx</a>
-                            <div class="qr-code" id="qrcode_6"></div>
-                        </div>
-                        <div class="subscription-link">
-                            <strong>Loon:</strong><br>
-                            <a href="javascript:void(0)" onclick="copyAndGenerateQR('https://${url.hostname}/${mytoken}?loon', 'qrcode_7', 'Loon订阅')">https://${url.hostname}/${mytoken}?loon</a>
-                            <div class="qr-code" id="qrcode_7"></div>
-                        </div>
+                    <p class="hint"><i class="fas fa-circle-info"></i> 仅常见代理客户端（或本页面）可拉取订阅，其余 User-Agent 一律返回 403。点击链接即复制。</p>
+                    <div class="subscription-grid">${renderCards(adminItems, '')}
                     </div>
                 </div>
             </details>
@@ -955,47 +968,7 @@ async function KV(request, env, txt = 'ADD.txt', guest, currentSettings = {}) {
                 <summary><i class="fas fa-chevron-right"></i> <i class="fas fa-user-friends"></i> 访客订阅 (Guest Links)</summary>
                 <div class="content-wrapper">
                     <p>访客订阅仅可用于客户端获取节点，无法访问此管理页面。<br>访客TOKEN: <strong>${currentSettings.guestToken}</strong></p>
-                    <div class="subscription-grid">
-                        <div class="subscription-link">
-                            <strong>自适应订阅:</strong><br>
-                            <a href="javascript:void(0)" onclick="copyAndGenerateQR('https://${url.hostname}/sub?token=${currentSettings.guestToken}', 'guest_0', '访客自适应订阅')">https://${url.hostname}/sub?token=${currentSettings.guestToken}</a>
-                            <div class="qr-code" id="guest_0"></div>
-                        </div>
-                        <div class="subscription-link">
-                            <strong>Clash / Clash Meta / Mihomo:</strong><br>
-                            <a href="javascript:void(0)" onclick="copyAndGenerateQR('https://${url.hostname}/sub?token=${currentSettings.guestToken}&clash', 'guest_1', '访客Clash订阅')">https://${url.hostname}/sub?token=${currentSettings.guestToken}&clash</a>
-                            <div class="qr-code" id="guest_1"></div>
-                        </div>
-                        <div class="subscription-link">
-                            <strong>Sing-Box:</strong><br>
-                            <a href="javascript:void(0)" onclick="copyAndGenerateQR('https://${url.hostname}/sub?token=${currentSettings.guestToken}&sb', 'guest_2', '访客Sing-Box订阅')">https://${url.hostname}/sub?token=${currentSettings.guestToken}&sb</a>
-                            <div class="qr-code" id="guest_2"></div>
-                        </div>
-                        <div class="subscription-link">
-                            <strong>Surge:</strong><br>
-                            <a href="javascript:void(0)" onclick="copyAndGenerateQR('https://${url.hostname}/sub?token=${currentSettings.guestToken}&surge', 'guest_3', '访客Surge订阅')">https://${url.hostname}/sub?token=${currentSettings.guestToken}&surge</a>
-                            <div class="qr-code" id="guest_3"></div>
-                        </div>
-                        <div class="subscription-link">
-                            <strong>Shadowrocket:</strong><br>
-                            <a href="javascript:void(0)" onclick="copyAndGenerateQR('https://${url.hostname}/sub?token=${currentSettings.guestToken}&b64', 'guest_4', '访客Shadowrocket订阅')">https://${url.hostname}/sub?token=${currentSettings.guestToken}&b64</a>
-                            <div class="qr-code" id="guest_4"></div>
-                        </div>
-                        <div class="subscription-link">
-                            <strong>V2rayN / V2rayNG:</strong><br>
-                            <a href="javascript:void(0)" onclick="copyAndGenerateQR('https://${url.hostname}/sub?token=${currentSettings.guestToken}&b64', 'guest_5', '访客V2rayN订阅')">https://${url.hostname}/sub?token=${currentSettings.guestToken}&b64</a>
-                            <div class="qr-code" id="guest_5"></div>
-                        </div>
-                        <div class="subscription-link">
-                            <strong>Quantumult X:</strong><br>
-                            <a href="javascript:void(0)" onclick="copyAndGenerateQR('https://${url.hostname}/sub?token=${currentSettings.guestToken}&quanx', 'guest_6', '访客Quantumult X订阅')">https://${url.hostname}/sub?token=${currentSettings.guestToken}&quanx</a>
-                            <div class="qr-code" id="guest_6"></div>
-                        </div>
-                        <div class="subscription-link">
-                            <strong>Loon:</strong><br>
-                            <a href="javascript:void(0)" onclick="copyAndGenerateQR('https://${url.hostname}/sub?token=${currentSettings.guestToken}&loon', 'guest_7', '访客Loon订阅')">https://${url.hostname}/sub?token=${currentSettings.guestToken}&loon</a>
-                            <div class="qr-code" id="guest_7"></div>
-                        </div>
+                    <div class="subscription-grid">${renderCards(guestItems, '访客')}
                     </div>
                 </div>
             </details>
@@ -1235,31 +1208,13 @@ async function KV(request, env, txt = 'ADD.txt', guest, currentSettings = {}) {
 
             // Auto-generate all QR codes on page load
             document.addEventListener('DOMContentLoaded', () => {
-                const adminLinks = [
-                    { id: 'qrcode_0', url: 'https://${url.hostname}/${mytoken}' },
-                    { id: 'qrcode_1', url: 'https://${url.hostname}/${mytoken}?clash' },
-                    { id: 'qrcode_2', url: 'https://${url.hostname}/${mytoken}?sb' },
-                    { id: 'qrcode_3', url: 'https://${url.hostname}/${mytoken}?surge' },
-                    { id: 'qrcode_4', url: 'https://${url.hostname}/${mytoken}?b64' },
-                    { id: 'qrcode_5', url: 'https://${url.hostname}/${mytoken}?b64' },
-                    { id: 'qrcode_6', url: 'https://${url.hostname}/${mytoken}?quanx' },
-                    { id: 'qrcode_7', url: 'https://${url.hostname}/${mytoken}?loon' }
-                ];
+                const adminLinks = ${JSON.stringify(adminItems.map(i => ({ id: i.id, url: i.url })))};
                 adminLinks.forEach(link => generateQrCode(link.url, link.id));
 
                 // Only generate guest QR codes if guestToken is not empty
                 const guestTokenValue = '${currentSettings.guestToken}'; // Get the actual value
                 if (guestTokenValue && guestTokenValue !== 'auto' && guestTokenValue !== 'null' && guestTokenValue !== 'undefined') {
-                    const guestLinks = [
-                        { id: 'guest_0', url: 'https://${url.hostname}/sub?token=${currentSettings.guestToken}' },
-                        { id: 'guest_1', url: 'https://${url.hostname}/sub?token=${currentSettings.guestToken}&clash' },
-                        { id: 'guest_2', url: 'https://${url.hostname}/sub?token=${currentSettings.guestToken}&sb' },
-                        { id: 'guest_3', url: 'https://${url.hostname}/sub?token=${currentSettings.guestToken}&surge' },
-                        { id: 'guest_4', url: 'https://${url.hostname}/sub?token=${currentSettings.guestToken}&b64' },
-                        { id: 'guest_5', url: 'https://${url.hostname}/sub?token=${currentSettings.guestToken}&b64' },
-                        { id: 'guest_6', url: 'https://${url.hostname}/sub?token=${currentSettings.guestToken}&quanx' },
-                        { id: 'guest_7', url: 'https://${url.hostname}/sub?token=${currentSettings.guestToken}&loon' }
-                    ];
+                    const guestLinks = ${JSON.stringify(guestItems.map(i => ({ id: i.id, url: i.url })))};
                     guestLinks.forEach(link => generateQrCode(link.url, link.id));
                 }
 
