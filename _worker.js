@@ -98,14 +98,12 @@ export default {
 
 		if (!([mytoken, fakeToken, 访客订阅].includes(token) || url.pathname == ("/" + mytoken) || url.pathname.includes("/" + mytoken + "?"))) {
 			if (TG == 1 && url.pathname !== "/" && url.pathname !== "/favicon.ico") await sendMessage(`#异常访问 ${FileName}`, request.headers.get('CF-Connecting-IP'), `UA: ${userAgent}</tg-spoiler>\n域名: ${url.hostname}\n<tg-spoiler>入口: ${url.pathname + url.search}</tg-spoiler>`);
+			if (isClientUA(userAgent)) {
+				return new Response('Forbidden', { status: 403 });
+			}
 			if (env.URL302) return Response.redirect(env.URL302, 302);
 			else if (env.URL) return await proxyURL(env.URL, url);
-			else return new Response(await nginx(), {
-				status: 200,
-				headers: {
-					'Content-Type': 'text/html; charset=UTF-8',
-				},
-			});
+			else return new Response('Forbidden', { status: 403, headers: { 'Content-Type': 'text/plain; charset=UTF-8' } });
 		} else {
 			if (env.KV) {
 				await 迁移地址列表(env, 'LINK.txt');
@@ -282,6 +280,22 @@ async function nginx() {
 Access denied: 你的地区不支持访问该网站。
 	`
 	return text;
+}
+
+// 判断 User-Agent 是否属于已知代理客户端
+function isClientUA(ua) {
+	const clientKeywords = [
+		'clash', 'mihomo', 'meta',
+		'sing-box', 'singbox',
+		'surge',
+		'shadowrocket',
+		'quantumult',
+		'loon',
+		'v2rayn', 'v2rayng',
+		'stash', 'surfboard',
+	];
+	if (!ua || ua === 'null') return false;
+	return clientKeywords.some(kw => ua.includes(kw));
 }
 
 async function sendMessage(type, ip, add_data = "") {
@@ -896,29 +910,39 @@ async function KV(request, env, txt = 'ADD.txt', guest, currentSettings = {}) {
                             <div class="qr-code" id="qrcode_0"></div>
                         </div>
                         <div class="subscription-link">
-                            <strong>Base64:</strong><br>
-                            <a href="javascript:void(0)" onclick="copyAndGenerateQR('https://${url.hostname}/${mytoken}?b64', 'qrcode_1', 'Base64订阅')">https://${url.hostname}/${mytoken}?b64</a>
+                            <strong>Clash / Clash Meta / Mihomo:</strong><br>
+                            <a href="javascript:void(0)" onclick="copyAndGenerateQR('https://${url.hostname}/${mytoken}?clash', 'qrcode_1', 'Clash订阅')">https://${url.hostname}/${mytoken}?clash</a>
                             <div class="qr-code" id="qrcode_1"></div>
                         </div>
                         <div class="subscription-link">
-                            <strong>Clash:</strong><br>
-                            <a href="javascript:void(0)" onclick="copyAndGenerateQR('https://${url.hostname}/${mytoken}?clash', 'qrcode_2', 'Clash订阅')">https://${url.hostname}/${mytoken}?clash</a>
+                            <strong>Sing-Box:</strong><br>
+                            <a href="javascript:void(0)" onclick="copyAndGenerateQR('https://${url.hostname}/${mytoken}?sb', 'qrcode_2', 'Sing-Box订阅')">https://${url.hostname}/${mytoken}?sb</a>
                             <div class="qr-code" id="qrcode_2"></div>
                         </div>
                         <div class="subscription-link">
-                            <strong>Sing-Box:</strong><br>
-                            <a href="javascript:void(0)" onclick="copyAndGenerateQR('https://${url.hostname}/${mytoken}?sb', 'qrcode_3', 'Sing-Box订阅')">https://${url.hostname}/${mytoken}?sb</a>
+                            <strong>Surge:</strong><br>
+                            <a href="javascript:void(0)" onclick="copyAndGenerateQR('https://${url.hostname}/${mytoken}?surge', 'qrcode_3', 'Surge订阅')">https://${url.hostname}/${mytoken}?surge</a>
                             <div class="qr-code" id="qrcode_3"></div>
                         </div>
                         <div class="subscription-link">
-                            <strong>Surge:</strong><br>
-                            <a href="javascript:void(0)" onclick="copyAndGenerateQR('https://${url.hostname}/${mytoken}?surge', 'qrcode_4', 'Surge订阅')">https://${url.hostname}/${mytoken}?surge</a>
+                            <strong>Shadowrocket:</strong><br>
+                            <a href="javascript:void(0)" onclick="copyAndGenerateQR('https://${url.hostname}/${mytoken}?b64', 'qrcode_4', 'Shadowrocket订阅')">https://${url.hostname}/${mytoken}?b64</a>
                             <div class="qr-code" id="qrcode_4"></div>
                         </div>
                         <div class="subscription-link">
-                            <strong>Loon:</strong><br>
-                            <a href="javascript:void(0)" onclick="copyAndGenerateQR('https://${url.hostname}/${mytoken}?loon', 'qrcode_5', 'Loon订阅')">https://${url.hostname}/${mytoken}?loon</a>
+                            <strong>V2rayN / V2rayNG:</strong><br>
+                            <a href="javascript:void(0)" onclick="copyAndGenerateQR('https://${url.hostname}/${mytoken}?b64', 'qrcode_5', 'V2rayN订阅')">https://${url.hostname}/${mytoken}?b64</a>
                             <div class="qr-code" id="qrcode_5"></div>
+                        </div>
+                        <div class="subscription-link">
+                            <strong>Quantumult X:</strong><br>
+                            <a href="javascript:void(0)" onclick="copyAndGenerateQR('https://${url.hostname}/${mytoken}?quanx', 'qrcode_6', 'Quantumult X订阅')">https://${url.hostname}/${mytoken}?quanx</a>
+                            <div class="qr-code" id="qrcode_6"></div>
+                        </div>
+                        <div class="subscription-link">
+                            <strong>Loon:</strong><br>
+                            <a href="javascript:void(0)" onclick="copyAndGenerateQR('https://${url.hostname}/${mytoken}?loon', 'qrcode_7', 'Loon订阅')">https://${url.hostname}/${mytoken}?loon</a>
+                            <div class="qr-code" id="qrcode_7"></div>
                         </div>
                     </div>
                 </div>
@@ -935,19 +959,39 @@ async function KV(request, env, txt = 'ADD.txt', guest, currentSettings = {}) {
                             <div class="qr-code" id="guest_0"></div>
                         </div>
                         <div class="subscription-link">
-                            <strong>Base64:</strong><br>
-                            <a href="javascript:void(0)" onclick="copyAndGenerateQR('https://${url.hostname}/sub?token=${currentSettings.guestToken}&b64', 'guest_1', '访客Base64订阅')">https://${url.hostname}/sub?token=${currentSettings.guestToken}&b64</a>
+                            <strong>Clash / Clash Meta / Mihomo:</strong><br>
+                            <a href="javascript:void(0)" onclick="copyAndGenerateQR('https://${url.hostname}/sub?token=${currentSettings.guestToken}&clash', 'guest_1', '访客Clash订阅')">https://${url.hostname}/sub?token=${currentSettings.guestToken}&clash</a>
                             <div class="qr-code" id="guest_1"></div>
                         </div>
                         <div class="subscription-link">
-                            <strong>Clash:</strong><br>
-                            <a href="javascript:void(0)" onclick="copyAndGenerateQR('https://${url.hostname}/sub?token=${currentSettings.guestToken}&clash', 'guest_2', '访客Clash订阅')">https://${url.hostname}/sub?token=${currentSettings.guestToken}&clash</a>
+                            <strong>Sing-Box:</strong><br>
+                            <a href="javascript:void(0)" onclick="copyAndGenerateQR('https://${url.hostname}/sub?token=${currentSettings.guestToken}&sb', 'guest_2', '访客Sing-Box订阅')">https://${url.hostname}/sub?token=${currentSettings.guestToken}&sb</a>
                             <div class="qr-code" id="guest_2"></div>
                         </div>
                         <div class="subscription-link">
-                            <strong>Sing-Box:</strong><br>
-                            <a href="javascript:void(0)" onclick="copyAndGenerateQR('https://${url.hostname}/sub?token=${currentSettings.guestToken}&sb', 'guest_3', '访客Sing-Box订阅')">https://${url.hostname}/sub?token=${currentSettings.guestToken}&sb</a>
+                            <strong>Surge:</strong><br>
+                            <a href="javascript:void(0)" onclick="copyAndGenerateQR('https://${url.hostname}/sub?token=${currentSettings.guestToken}&surge', 'guest_3', '访客Surge订阅')">https://${url.hostname}/sub?token=${currentSettings.guestToken}&surge</a>
                             <div class="qr-code" id="guest_3"></div>
+                        </div>
+                        <div class="subscription-link">
+                            <strong>Shadowrocket:</strong><br>
+                            <a href="javascript:void(0)" onclick="copyAndGenerateQR('https://${url.hostname}/sub?token=${currentSettings.guestToken}&b64', 'guest_4', '访客Shadowrocket订阅')">https://${url.hostname}/sub?token=${currentSettings.guestToken}&b64</a>
+                            <div class="qr-code" id="guest_4"></div>
+                        </div>
+                        <div class="subscription-link">
+                            <strong>V2rayN / V2rayNG:</strong><br>
+                            <a href="javascript:void(0)" onclick="copyAndGenerateQR('https://${url.hostname}/sub?token=${currentSettings.guestToken}&b64', 'guest_5', '访客V2rayN订阅')">https://${url.hostname}/sub?token=${currentSettings.guestToken}&b64</a>
+                            <div class="qr-code" id="guest_5"></div>
+                        </div>
+                        <div class="subscription-link">
+                            <strong>Quantumult X:</strong><br>
+                            <a href="javascript:void(0)" onclick="copyAndGenerateQR('https://${url.hostname}/sub?token=${currentSettings.guestToken}&quanx', 'guest_6', '访客Quantumult X订阅')">https://${url.hostname}/sub?token=${currentSettings.guestToken}&quanx</a>
+                            <div class="qr-code" id="guest_6"></div>
+                        </div>
+                        <div class="subscription-link">
+                            <strong>Loon:</strong><br>
+                            <a href="javascript:void(0)" onclick="copyAndGenerateQR('https://${url.hostname}/sub?token=${currentSettings.guestToken}&loon', 'guest_7', '访客Loon订阅')">https://${url.hostname}/sub?token=${currentSettings.guestToken}&loon</a>
+                            <div class="qr-code" id="guest_7"></div>
                         </div>
                     </div>
                 </div>
@@ -1186,11 +1230,13 @@ async function KV(request, env, txt = 'ADD.txt', guest, currentSettings = {}) {
             document.addEventListener('DOMContentLoaded', () => {
                 const adminLinks = [
                     { id: 'qrcode_0', url: 'https://${url.hostname}/${mytoken}' },
-                    { id: 'qrcode_1', url: 'https://${url.hostname}/${mytoken}?b64' },
-                    { id: 'qrcode_2', url: 'https://${url.hostname}/${mytoken}?clash' },
-                    { id: 'qrcode_3', url: 'https://${url.hostname}/${mytoken}?sb' },
-                    { id: 'qrcode_4', url: 'https://${url.hostname}/${mytoken}?surge' },
-                    { id: 'qrcode_5', url: 'https://${url.hostname}/${mytoken}?loon' }
+                    { id: 'qrcode_1', url: 'https://${url.hostname}/${mytoken}?clash' },
+                    { id: 'qrcode_2', url: 'https://${url.hostname}/${mytoken}?sb' },
+                    { id: 'qrcode_3', url: 'https://${url.hostname}/${mytoken}?surge' },
+                    { id: 'qrcode_4', url: 'https://${url.hostname}/${mytoken}?b64' },
+                    { id: 'qrcode_5', url: 'https://${url.hostname}/${mytoken}?b64' },
+                    { id: 'qrcode_6', url: 'https://${url.hostname}/${mytoken}?quanx' },
+                    { id: 'qrcode_7', url: 'https://${url.hostname}/${mytoken}?loon' }
                 ];
                 adminLinks.forEach(link => generateQrCode(link.url, link.id));
 
@@ -1199,9 +1245,13 @@ async function KV(request, env, txt = 'ADD.txt', guest, currentSettings = {}) {
                 if (guestTokenValue && guestTokenValue !== 'auto' && guestTokenValue !== 'null' && guestTokenValue !== 'undefined') {
                     const guestLinks = [
                         { id: 'guest_0', url: 'https://${url.hostname}/sub?token=${currentSettings.guestToken}' },
-                        { id: 'guest_1', url: 'https://${url.hostname}/sub?token=${currentSettings.guestToken}&b64' },
-                        { id: 'guest_2', url: 'https://${url.hostname}/sub?token=${currentSettings.guestToken}&clash' },
-                        { id: 'guest_3', url: 'https://${url.hostname}/sub?token=${currentSettings.guestToken}&sb' }
+                        { id: 'guest_1', url: 'https://${url.hostname}/sub?token=${currentSettings.guestToken}&clash' },
+                        { id: 'guest_2', url: 'https://${url.hostname}/sub?token=${currentSettings.guestToken}&sb' },
+                        { id: 'guest_3', url: 'https://${url.hostname}/sub?token=${currentSettings.guestToken}&surge' },
+                        { id: 'guest_4', url: 'https://${url.hostname}/sub?token=${currentSettings.guestToken}&b64' },
+                        { id: 'guest_5', url: 'https://${url.hostname}/sub?token=${currentSettings.guestToken}&b64' },
+                        { id: 'guest_6', url: 'https://${url.hostname}/sub?token=${currentSettings.guestToken}&quanx' },
+                        { id: 'guest_7', url: 'https://${url.hostname}/sub?token=${currentSettings.guestToken}&loon' }
                     ];
                     guestLinks.forEach(link => generateQrCode(link.url, link.id));
                 }
