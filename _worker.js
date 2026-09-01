@@ -10,7 +10,7 @@ let SUBUpdateTime = 6; //自定义订阅更新时间，单位小时
 let total = 99;//TB
 let timestamp = 4102329600000;//2099-12-31
 // --- 新增：地区访问白名单配置 ---
-let WhiteList = 'CN'; // 默认允许的地区代码
+let WhiteList = ''; // 留空 = 不限制地区；多个地区用逗号分隔，如 'CN,HK,TW'
 
 //节点链接 + 订阅链接
 let MainData = `
@@ -37,23 +37,6 @@ export default {
 		const userAgentHeader = request.headers.get('User-Agent');
 		const userAgent = userAgentHeader ? userAgentHeader.toLowerCase() : "null";
 		const url = new URL(request.url);
-		// ------ 新增：地区白名单拦截逻辑 ------
-		// 优先从环境变量或 KV 中读取，最后使用代码内置默认值
-		let allowedRegionsStr = env.WHITELIST || WhiteList;
-		if (env.KV) {
-			allowedRegionsStr = await env.KV.get(KV_WHITELIST_KEY) || allowedRegionsStr;
-		}
-		const allowedRegions = allowedRegionsStr.split(',');
-		const country = request.cf ? request.cf.country : 'Unknown';
-
-		// 排除 favicon，对其他路径进行校验
-		if (url.pathname !== "/favicon.ico" && !allowedRegions.includes(country)) {
-			return new Response(await nginx(), {
-				status: 403,
-				headers: { 'Content-Type': 'text/html; charset=UTF-8' },
-			});
-		}
-		// ------------------------------------
 		const token = url.searchParams.get('token');
 		mytoken = env.TOKEN || mytoken;
 		TG = env.TG || TG;
@@ -89,6 +72,23 @@ export default {
 		guestToken = env.GUESTTOKEN || env.GUEST || guestToken;
 		if (!guestToken) guestToken = await MD5MD5(mytoken);
 		const 访客订阅 = guestToken;
+
+		// ------ 地区白名单拦截：留空则不限制 ------
+		let allowedRegionsStr = env.WHITELIST ?? WhiteList;
+		if (env.KV) allowedRegionsStr = (await env.KV.get(KV_WHITELIST_KEY)) ?? allowedRegionsStr;
+		allowedRegionsStr = (allowedRegionsStr || '').trim();
+		if (allowedRegionsStr && url.pathname !== "/favicon.ico" && token !== fakeToken) {
+			// fakeToken 由订阅转换后端回源使用，其出口地区不可控，故豁免
+			const allowedRegions = allowedRegionsStr.split(',').map(r => r.trim().toUpperCase()).filter(Boolean);
+			const country = request.cf?.country || 'Unknown';
+			if (!allowedRegions.includes(country)) {
+				return new Response(await nginx(), {
+					status: 403,
+					headers: { 'Content-Type': 'text/html; charset=UTF-8' },
+				});
+			}
+		}
+		// ------------------------------------
 		//console.log(`${fakeUserID}\n${fakeHostName}`); // 打印fakeID
 
 		let UD = Math.floor(((timestamp - Date.now()) / timestamp * total * 1099511627776) / 2);
@@ -116,7 +116,8 @@ export default {
                         tgId: ChatID,
                         fileName: FileName,
                         url302: env.URL302,
-                        guestToken: guestToken
+                        guestToken: guestToken,
+                        whiteList: allowedRegionsStr
                     });
 				} else {
 					MainData = await env.KV.get('LINK.txt') || MainData;
@@ -552,6 +553,7 @@ async function KV(request, env, txt = 'ADD.txt', guest, currentSettings = {}) {
 				const newFileName = formData.get('filename');
 				const newUrl302 = formData.get('url302');
 				const newGuestToken = formData.get('guesttoken');
+				const newWhiteList = formData.get('whitelist');
 
 				// Save subscription list content
 				if (content !== null) { // Check if content field exists in form
@@ -566,6 +568,7 @@ async function KV(request, env, txt = 'ADD.txt', guest, currentSettings = {}) {
 				if (newFileName !== null) await env.KV.put(KV_FILENAME_KEY, newFileName);
 				if (newUrl302 !== null) await env.KV.put(KV_URL302_KEY, newUrl302);
 				if (newGuestToken !== null) await env.KV.put(KV_GUESTTOKEN_KEY, newGuestToken);
+				if (newWhiteList !== null) await env.KV.put(KV_WHITELIST_KEY, newWhiteList.trim());
 
 				return new Response("保存成功");
 			} catch (error) {
@@ -588,6 +591,7 @@ async function KV(request, env, txt = 'ADD.txt', guest, currentSettings = {}) {
                 currentSettings.fileName = await env.KV.get(KV_FILENAME_KEY) || currentSettings.fileName || FileName;
                 currentSettings.url302 = await env.KV.get(KV_URL302_KEY) || currentSettings.url302 || env.URL302;
                 currentSettings.guestToken = await env.KV.get(KV_GUESTTOKEN_KEY) || currentSettings.guestToken || guestToken;
+                currentSettings.whiteList = (await env.KV.get(KV_WHITELIST_KEY)) ?? currentSettings.whiteList ?? '';
 			} catch (error) {
 				console.error('读取KV时发生错误:', error);
 				content = '读取数据时发生错误: ' + error.message;
@@ -1028,6 +1032,10 @@ async function KV(request, env, txt = 'ADD.txt', guest, currentSettings = {}) {
                          <div class="form-group">
                             <label for="guesttoken"><i class="fas fa-user-secret"></i> 访客TOKEN (GUESTTOKEN):</label>
                             <input type="text" id="guesttoken" name="guesttoken" value="${currentSettings.guestToken}" placeholder="Optional: auto or UUID">
+                        </div>
+                        <div class="form-group">
+                            <label for="whitelist"><i class="fas fa-globe-asia"></i> 地区白名单 (WHITELIST):</label>
+                            <input type="text" id="whitelist" name="whitelist" value="${currentSettings.whiteList || ''}" placeholder="留空 = 不限制地区；多个用逗号分隔，如 CN,HK,TW">
                         </div>
                         <div class="save-container">
                             <button class="save-btn" type="button" onclick="saveConfig(this)">
