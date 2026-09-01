@@ -699,8 +699,7 @@ async function KV(request, env, txt = 'ADD.txt', guest, currentSettings = {}) {
                 max-height: 0;
             }
             details[open] .content-wrapper {
-                max-height: 1000px; /* Adjusted */
-                transition: max-height var(--animation-speed) ease-in;
+                max-height: none;
                 padding: 15px 20px;
                 border-top: 1px solid var(--border-color);
             }
@@ -992,6 +991,7 @@ async function KV(request, env, txt = 'ADD.txt', guest, currentSettings = {}) {
                             <strong>Loon:</strong><br>
                             <a href="javascript:void(0)" onclick="copyAndGenerateQR('https://${url.hostname}/sub?token=${currentSettings.guestToken}&loon', 'guest_7', '访客Loon订阅')">https://${url.hostname}/sub?token=${currentSettings.guestToken}&loon</a>
                             <div class="qr-code" id="guest_7"></div>
+                        </div>
                     </div>
                 </div>
             </details>
